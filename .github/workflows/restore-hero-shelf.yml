@@ -1,1 +1,38 @@
-PLACEHOLDER
+name: restore-hero-shelf
+on:
+  push:
+    paths:
+      - ".github/workflows/restore-hero-shelf.yml"
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore hero shelf visual
+        run: |
+          set -euo pipefail
+          mkdir -p public src/app
+          curl -fsSL -o public/hero-shelf.png "https://litter.catbox.moe/6juzx3.png"
+          curl -fsSL -o src/app/page.tsx "https://litter.catbox.moe/m5otpd.tsx"
+          curl -fsSL -o src/app/globals.css "https://litter.catbox.moe/6pbx9n.css"
+          wc -c public/hero-shelf.png src/app/page.tsx src/app/globals.css
+          python3 - <<'PY'
+          import hashlib, pathlib
+          png = pathlib.Path("public/hero-shelf.png").read_bytes()
+          assert len(png) == 2105991, len(png)
+          assert hashlib.md5(png).hexdigest() == "39bd17cb3e5adf98e55d1d6e2537f81f"
+          assert pathlib.Path("src/app/page.tsx").stat().st_size == 2818
+          assert pathlib.Path("src/app/globals.css").stat().st_size == 4440
+          print("ok hero files restored")
+          PY
+      - name: Commit hero visual and remove this workflow
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .github/workflows/restore-hero-shelf.yml
+          git add public/hero-shelf.png src/app/page.tsx src/app/globals.css
+          git commit -m "Replace empty hero blob with full-bleed shelf visual"
+          git push
