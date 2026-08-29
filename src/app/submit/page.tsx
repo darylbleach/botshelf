@@ -77,7 +77,7 @@ export default function SubmitPage() {
       <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
         Publish
       </p>
-      <h1 className="font-[family-name:var(--font-display)] text-4xl font-bold tracking-tight">
+      <h1 className="font-[family-name:var(--font-display)] text-[clamp(1.85rem,6vw,2.5rem)] font-bold tracking-tight">
         Submit a template
       </h1>
       <p className="mt-3 text-[var(--fg-muted)]">
