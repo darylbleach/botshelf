@@ -21,7 +21,7 @@ export function TemplateCard({ template }: { template: Template }) {
               ? "bg-white/10 text-white"
               : sale
                 ? "bg-[rgba(255,139,92,0.18)] text-[var(--sale)]"
-                : "bg-[var(--accent)] text-[var(--accent-ink)]"
+                : "btn-accent"
           }`}
         >
           {formatPrice(price)}

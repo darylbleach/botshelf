@@ -25,13 +25,13 @@ export default async function HomePage() {
             </span>
           </h1>
           <p className="animate-rise mt-6 max-w-xl text-base leading-relaxed text-[var(--fg-muted)] sm:text-lg [animation-delay:140ms]">
-            Real Grok Bots only. Add free templates in one click — or publish your own
-            and set a price.
+            Browse real Grok Bots from creators — or publish yours and set a price.
+            Gallery starts empty until someone submits.
           </p>
           <div className="animate-rise mt-9 flex flex-wrap gap-3 [animation-delay:200ms]">
             <a
               href="#gallery"
-              className="inline-flex min-h-11 items-center rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110"
+              className="btn-accent inline-flex min-h-11 items-center rounded-full px-5 py-3 text-sm font-semibold transition"
             >
               Browse templates
             </a>
