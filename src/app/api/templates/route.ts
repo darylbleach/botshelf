@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { auth, authorIdForUser, displayNameFromUser } from "@/lib/auth";
 import { createTemplate, listTemplates } from "@/lib/store";
 import { normalizeGrokBotUrl } from "@/lib/grok";
 import type { Category, Integration } from "@/lib/types";
@@ -59,7 +60,7 @@ const submitSchema = z.object({
   description: z.string().min(10).max(280),
   longDescription: z.string().min(20).max(2000).optional(),
   category: z.string(),
-  author: z.string().min(2).max(40),
+  author: z.string().min(2).max(40).optional(),
   priceCents: z.number().int().min(0).max(100000),
   salePriceCents: z.number().int().min(0).max(100000).optional(),
   templateUrl: z.string().min(8),
@@ -69,6 +70,11 @@ const submitSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Sign in required" }, { status: 401 });
+  }
+
   const body = await request.json();
   const parsed = submitSchema.safeParse(body);
   if (!parsed.success) {
@@ -92,14 +98,20 @@ export async function POST(request: Request) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
+  const author =
+    data.author?.trim() ||
+    displayNameFromUser({ name: session.user.name, email: session.user.email });
+  const authorId = authorIdForUser(session.user.id);
+
   const template = await createTemplate({
     slug: `${slug}-${Date.now().toString(36).slice(-4)}`,
     title: data.title,
     description: data.description,
     longDescription: data.longDescription ?? data.description,
     category: data.category as Category,
-    author: data.author,
-    authorId: `author_${data.author.toLowerCase().replace(/\s+/g, "_")}`,
+    author,
+    authorId,
+    userId: session.user.id,
     priceCents: data.listForSale === false ? 0 : data.priceCents,
     salePriceCents: data.salePriceCents,
     integrations: data.integrations as Integration[],
