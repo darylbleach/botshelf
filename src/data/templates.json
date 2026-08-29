@@ -12,7 +12,11 @@
     "copies": 128,
     "featured": true,
     "createdAt": "2026-08-20T10:00:00.000Z",
-    "integrations": ["gmail", "x", "browser"],
+    "integrations": [
+      "gmail",
+      "x",
+      "browser"
+    ],
     "instructions": "Paste the prospect thread + deal stage. Harvey returns subject, body, and a next-step checklist.",
     "templateUrl": "https://x.ai/bot/Hs8kQm2nLp4vRx9cWt3Yd",
     "status": "published",
@@ -32,7 +36,10 @@
     "copies": 412,
     "featured": true,
     "createdAt": "2026-08-18T09:00:00.000Z",
-    "integrations": ["gmail", "calendar"],
+    "integrations": [
+      "gmail",
+      "calendar"
+    ],
     "instructions": "Connect Gmail. Run morning digest. Approve or edit drafts before send.",
     "templateUrl": "https://x.ai/bot/It4nBx7wKp2mQs8rVu1Zc",
     "status": "published",
@@ -53,7 +60,11 @@
     "copies": 86,
     "featured": false,
     "createdAt": "2026-08-22T14:00:00.000Z",
-    "integrations": ["notion", "slack", "x"],
+    "integrations": [
+      "notion",
+      "slack",
+      "x"
+    ],
     "instructions": "Point it at your Notion launch doc and Slack channel. It posts daily digests.",
     "templateUrl": "https://x.ai/bot/Lo9pAe3sDf6gHj1kLm2No",
     "status": "published",
@@ -75,7 +86,10 @@
     "copies": 203,
     "featured": true,
     "createdAt": "2026-08-12T11:00:00.000Z",
-    "integrations": ["browser", "notion"],
+    "integrations": [
+      "browser",
+      "notion"
+    ],
     "instructions": "Add topics + preferred cadence. Radar emails a brief every Monday.",
     "templateUrl": "https://x.ai/bot/Rr5tYu8iOp1aSd4fGh7Jk",
     "status": "published",
@@ -96,7 +110,10 @@
     "copies": 97,
     "featured": false,
     "createdAt": "2026-08-25T08:00:00.000Z",
-    "integrations": ["gmail", "slack"],
+    "integrations": [
+      "gmail",
+      "slack"
+    ],
     "instructions": "Paste ticket thread. Mirror returns a draft + risk flags.",
     "templateUrl": "https://x.ai/bot/Sm2nBv5cXz8qWe3rTy6Ui",
     "status": "published",
@@ -115,7 +132,10 @@
     "copies": 54,
     "featured": false,
     "createdAt": "2026-08-10T16:00:00.000Z",
-    "integrations": ["browser", "notion"],
+    "integrations": [
+      "browser",
+      "notion"
+    ],
     "instructions": "Share sheet links + alert threshold. Pulse posts Fridays.",
     "templateUrl": "https://x.ai/bot/Fp7gHj0kLm3nBq6wEr9Yt",
     "status": "published",
@@ -136,7 +156,10 @@
     "copies": 331,
     "featured": false,
     "createdAt": "2026-08-15T12:00:00.000Z",
-    "integrations": ["notion", "browser"],
+    "integrations": [
+      "notion",
+      "browser"
+    ],
     "instructions": "Drop outline + audience. Get draft + three headline options.",
     "templateUrl": "https://x.ai/bot/Wr1tAs4dFg7hJk0lZx3Cv",
     "status": "published",
@@ -157,7 +180,11 @@
     "copies": 520,
     "featured": true,
     "createdAt": "2026-08-26T18:00:00.000Z",
-    "integrations": ["x", "slack", "calendar"],
+    "integrations": [
+      "x",
+      "slack",
+      "calendar"
+    ],
     "instructions": "Add friends + city + vibe. Party Bot runs the poll and books.",
     "templateUrl": "https://x.ai/bot/Pb8nMq2wEr5tYu1iOp4As",
     "status": "published",
@@ -177,7 +204,10 @@
     "copies": 178,
     "featured": false,
     "createdAt": "2026-08-08T07:00:00.000Z",
-    "integrations": ["browser", "slack"],
+    "integrations": [
+      "browser",
+      "slack"
+    ],
     "instructions": "Paste PR URL or diff. Whisperer returns review checklist + comment draft.",
     "templateUrl": "https://x.ai/bot/Pr3wHi6sPe9rRe2vIe5wX",
     "status": "published",
@@ -198,7 +228,10 @@
     "copies": 245,
     "featured": false,
     "createdAt": "2026-08-21T06:00:00.000Z",
-    "integrations": ["calendar", "slack"],
+    "integrations": [
+      "calendar",
+      "slack"
+    ],
     "instructions": "Connect calendar. Set focus hours. Coach posts a morning plan.",
     "templateUrl": "https://x.ai/bot/Fc4oCu7sHc0aCh3tBo6tS",
     "status": "published",
@@ -219,7 +252,11 @@
     "copies": 61,
     "featured": true,
     "createdAt": "2026-08-05T10:00:00.000Z",
-    "integrations": ["x", "gmail", "notion"],
+    "integrations": [
+      "x",
+      "gmail",
+      "notion"
+    ],
     "instructions": "Set channel + KPI. Loop proposes three experiments each Monday.",
     "templateUrl": "https://x.ai/bot/Gl5oOp8pLo1oOp4pGr7wT",
     "status": "published",
@@ -240,7 +277,10 @@
     "copies": 149,
     "featured": false,
     "createdAt": "2026-08-27T20:00:00.000Z",
-    "integrations": ["slack", "notion"],
+    "integrations": [
+      "slack",
+      "notion"
+    ],
     "instructions": "Paste incident timeline. Ops Pager returns status + postmortem outline.",
     "templateUrl": "https://x.ai/bot/Y7LbP6p5EBFjfdTp69cKr",
     "status": "published",
