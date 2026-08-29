@@ -39,6 +39,7 @@ async function fulfillCheckoutSession(session: Stripe.Checkout.Session) {
 async function syncConnectedAccount(account: Stripe.Account) {
   const authorId = account.metadata?.botshelf_author_id;
   if (!authorId) {
+    // Match by stripe account id if metadata missing
     const sellers = await listSellers();
     const existing = sellers.find((s) => s.stripeAccountId === account.id);
     if (!existing) return;
@@ -98,6 +99,7 @@ export async function POST(request: Request) {
       await fulfillCheckoutSession(event.data.object as Stripe.Checkout.Session);
       break;
     case "checkout.session.async_payment_failed":
+      // No fulfill — buyer can retry checkout
       break;
     case "account.updated":
       await syncConnectedAccount(event.data.object as Stripe.Account);
@@ -121,6 +123,7 @@ export async function POST(request: Request) {
   return NextResponse.json({ received: true });
 }
 
+/** Health check for deploy / Stripe dashboard probes */
 export async function GET() {
   return NextResponse.json({
     ok: true,
