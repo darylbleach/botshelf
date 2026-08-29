@@ -78,7 +78,7 @@ export async function POST(request: Request) {
   const slug = data.title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|$)/g, "");
+    .replace(/(^-|-$)/g, "");
 
   const template = await createTemplate({
     slug: `${slug}-${Date.now().toString(36).slice(-4)}`,
