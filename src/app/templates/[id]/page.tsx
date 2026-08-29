@@ -35,7 +35,7 @@ export default async function TemplateDetailPage({
 
       {canceled && (
         <p className="mt-4 rounded-xl border border-[var(--line)] bg-white/5 px-4 py-3 text-sm text-[var(--fg-muted)]">
-          Checkout canceled — no charge. You can try again anytime.
+          Checkout cancelled — no charge. You can try again anytime.
         </p>
       )}
 
