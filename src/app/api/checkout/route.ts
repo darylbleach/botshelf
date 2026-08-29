@@ -67,6 +67,8 @@ export async function POST(request: Request) {
   }
 
   if (!seller?.stripeAccountId || !seller.payoutsEnabled) {
+    // Platform collects until Connect is fully enabled for the seller.
+    // Seller cash is still recorded; payout once Connect is live.
     const lineItem = stripePriceId
       ? { quantity: 1 as const, price: stripePriceId }
       : {
@@ -141,6 +143,7 @@ export async function POST(request: Request) {
     mode: "payment",
     customer_email: email,
     line_items: [lineItem],
+    // Destination charge: seller gets cash (85%), BotShelf keeps application fee (15%).
     payment_intent_data: {
       application_fee_amount: fee,
       transfer_data: {
