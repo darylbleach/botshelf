@@ -65,7 +65,7 @@ export function MarketplaceGallery({ initial }: { initial: Template[] }) {
             onClick={() => setCategory(item)}
             className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm transition ${
               category === item
-                ? "bg-[var(--accent)] text-[var(--accent-ink)]"
+                ? "btn-accent"
                 : "border border-[var(--line)] text-[var(--fg-muted)] hover:border-[var(--line-strong)] hover:text-white"
             }`}
           >
@@ -86,7 +86,17 @@ export function MarketplaceGallery({ initial }: { initial: Template[] }) {
 
       {templates.length === 0 && (
         <p className="py-16 text-center text-[var(--fg-muted)]">
-          No templates match that search. Try another filter or submit your own.
+          {initial.length === 0 && !q && filter === "All" && category === "All" ? (
+            <>
+              No bots listed yet.{" "}
+              <a href="/submit" className="text-white underline-offset-4 hover:underline">
+                Submit the first template
+              </a>
+              .
+            </>
+          ) : (
+            <>No templates match that search. Try another filter or submit your own.</>
+          )}
         </p>
       )}
     </section>

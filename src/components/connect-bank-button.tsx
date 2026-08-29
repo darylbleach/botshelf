@@ -68,7 +68,7 @@ export function ConnectBankButton({
         type="button"
         disabled={loading || !author || !email}
         onClick={start}
-        className="mt-4 w-full rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110 disabled:opacity-60"
+        className="mt-4 w-full btn-accent rounded-full px-5 py-3 text-sm font-semibold transition disabled:opacity-60"
       >
         {loading ? "Opening Stripe…" : "Connect bank account"}
       </button>

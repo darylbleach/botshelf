@@ -59,7 +59,7 @@ export function BuyButton({ template }: { template: Template }) {
           type="button"
           disabled={loading}
           onClick={recordAndOpenGrok}
-          className="w-full rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110 disabled:opacity-60"
+          className="w-full btn-accent rounded-full px-5 py-3 text-sm font-semibold transition disabled:opacity-60"
         >
           {loading ? "Opening Grok…" : "Add to Grok Bot"}
         </button>
@@ -88,7 +88,7 @@ export function BuyButton({ template }: { template: Template }) {
         type="button"
         disabled={loading}
         onClick={() => checkout(false)}
-        className="w-full rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110 disabled:opacity-60"
+        className="w-full btn-accent rounded-full px-5 py-3 text-sm font-semibold transition disabled:opacity-60"
       >
         {loading
           ? "Starting checkout…"
