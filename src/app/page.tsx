@@ -25,8 +25,8 @@ export default async function HomePage() {
             </span>
           </h1>
           <p className="animate-rise mt-6 max-w-xl text-base leading-relaxed text-[var(--fg-muted)] sm:text-lg [animation-delay:140ms]">
-            Templates built by people who actually ship. Add one to your workspace
-            in a click, or publish your own and get paid in credits.
+            Templates built by people who actually ship. Add one to Grok Bot in a
+            click, or publish your own and get paid.
           </p>
           <div className="animate-rise mt-9 flex flex-wrap gap-3 [animation-delay:200ms]">
             <a

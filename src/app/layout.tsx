@@ -18,7 +18,7 @@ const body = Manrope({
 export const metadata: Metadata = {
   title: "BotShelf — Bot template marketplace",
   description:
-    "Discover, buy, and sell bot templates. Add one to your workspace in a click, or publish your own and get paid.",
+    "Discover, buy, and sell Grok Bot templates. Add one on x.ai in a click, or publish your own and get paid.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
