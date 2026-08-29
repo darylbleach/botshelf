@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Manrope } from "next/font/google";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
@@ -18,15 +19,16 @@ const body = Manrope({
 export const metadata: Metadata = {
   title: "BotShelf — Bot template marketplace",
   description:
-    "Discover, buy, and sell Grok Bot templates. Add one on x.ai in a click, or publish your own and get paid.",
+    "Discover, buy and sell Grok Bot templates. Add one on x.ai in a click, or publish your own and get paid.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} h-full`}>
+    <html lang="en-GB" className={`${display.variable} ${body.variable} h-full`}>
       <body className="noise min-h-full flex flex-col antialiased">
         <SiteHeader />
         <main className="flex-1">{children}</main>
+        <SiteFooter />
       </body>
     </html>
   );
