@@ -31,13 +31,13 @@ export default async function HomePage() {
           <div className="animate-rise mt-9 flex flex-wrap gap-3 [animation-delay:200ms]">
             <a
               href="#gallery"
-              className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-[var(--accent)]"
+              className="inline-flex min-h-11 items-center rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110"
             >
               Browse templates
             </a>
             <Link
               href="/submit"
-              className="rounded-full border border-[var(--line-strong)] bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:border-white/30 hover:bg-white/10"
+              className="inline-flex min-h-11 items-center rounded-full border border-[var(--line-strong)] bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:border-white/30 hover:bg-white/10"
             >
               Submit a template
             </Link>

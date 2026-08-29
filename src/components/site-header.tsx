@@ -35,14 +35,14 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav className="flex items-center gap-1 sm:gap-2">
+        <nav className="flex items-center gap-0.5 sm:gap-2">
           {links.map((link) => {
             const active = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`rounded-full px-3 py-1.5 text-sm transition ${
+                className={`inline-flex min-h-10 items-center rounded-full px-2.5 py-2 text-sm transition sm:px-3 sm:py-1.5 ${
                   active
                     ? "bg-white/10 text-white"
                     : "text-[var(--fg-muted)] hover:bg-white/5 hover:text-white"
@@ -54,7 +54,7 @@ export function SiteHeader() {
           })}
           <Link
             href="/submit"
-            className="ml-1 hidden rounded-full bg-white px-3.5 py-1.5 text-sm font-semibold text-black transition hover:bg-[var(--accent)] sm:inline-flex"
+            className="ml-1 hidden min-h-10 items-center rounded-full bg-[var(--accent)] px-3.5 py-1.5 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110 sm:inline-flex"
           >
             List a template
           </Link>
