@@ -6,6 +6,7 @@ export async function createSellerConnectAccount(input: {
   authorId: string;
   author: string;
   email: string;
+  userId: string;
   country?: string;
 }): Promise<{ seller: Seller; onboardingUrl: string }> {
   const stripe = getStripe();
@@ -40,14 +41,13 @@ export async function createSellerConnectAccount(input: {
         },
         metadata: {
           botshelf_author_id: input.authorId,
+          botshelf_user_id: input.userId,
           platform: "botshelf",
         },
         include: ["configuration.recipient", "identity", "requirements"],
       });
       accountId = account.id;
     } catch (err) {
-      // Controllable accounts (v1 controller) — used when v2 Account Storer
-      // permissions are not enabled on the platform key yet.
       const account = await stripe.accounts.create({
         controller: {
           stripe_dashboard: { type: "express" },
@@ -66,18 +66,19 @@ export async function createSellerConnectAccount(input: {
         },
         metadata: {
           botshelf_author_id: input.authorId,
+          botshelf_user_id: input.userId,
           platform: "botshelf",
         },
       });
       accountId = account.id;
       if (err instanceof Error) {
-        // Keep going — controller path succeeded.
         void err;
       }
     }
 
     seller = await upsertSeller({
       authorId: input.authorId,
+      userId: input.userId,
       author: input.author,
       email: input.email,
       stripeAccountId: accountId!,
@@ -101,15 +102,16 @@ export async function refreshSellerConnectStatus(authorId: string): Promise<Sell
   const stripe = getStripe();
   const seller = await getSeller(authorId);
   if (!stripe || !seller?.stripeAccountId) return seller ?? null;
+  if (!seller.userId) return seller;
 
   const account = await stripe.accounts.retrieve(seller.stripeAccountId);
   const transfers =
     account.capabilities?.transfers === "active" ||
-    // v2-style capability surface may appear under requirements later
     Boolean(account.payouts_enabled);
 
   return upsertSeller({
     ...seller,
+    userId: seller.userId,
     payoutsEnabled: Boolean(account.payouts_enabled || transfers),
     detailsSubmitted: Boolean(account.details_submitted),
     updatedAt: new Date().toISOString(),
