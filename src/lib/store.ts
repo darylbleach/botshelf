@@ -13,6 +13,9 @@ const TEMPLATES_FILE = path.join(DATA_DIR, "templates.json");
 const PURCHASES_FILE = path.join(DATA_DIR, "purchases.json");
 const WORKSPACE_FILE = path.join(DATA_DIR, "workspace.json");
 const SELLERS_FILE = path.join(DATA_DIR, "sellers.json");
+/** Bump to replace stale /tmp catalogs (fake paid placeholders, e2e junk). */
+const CATALOG_VERSION = "honest-v1-ops-pager-free";
+const CATALOG_VERSION_FILE = path.join(DATA_DIR, "catalog-version.txt");
 
 let ensurePromise: Promise<void> | null = null;
 
@@ -32,6 +35,21 @@ async function ensureFiles() {
         } catch {
           await fs.writeFile(file, JSON.stringify(seed, null, 2));
         }
+      }
+
+      // Replace dishonest /tmp catalogs from earlier deploys once per version bump.
+      let version = "";
+      try {
+        version = (await fs.readFile(CATALOG_VERSION_FILE, "utf8")).trim();
+      } catch {
+        version = "";
+      }
+      if (version !== CATALOG_VERSION) {
+        await fs.writeFile(
+          TEMPLATES_FILE,
+          JSON.stringify(SEED_TEMPLATES, null, 2),
+        );
+        await fs.writeFile(CATALOG_VERSION_FILE, CATALOG_VERSION);
       }
     })().catch((err) => {
       ensurePromise = null;
