@@ -63,6 +63,7 @@ export interface Seller {
   authorId: string;
   author: string;
   email: string;
+  userId?: string;
   stripeAccountId?: string;
   payoutsEnabled: boolean;
   detailsSubmitted: boolean;
