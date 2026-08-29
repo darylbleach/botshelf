@@ -33,11 +33,13 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
 
   body {
     margin: 0;
     min-height: 100vh;
+    overflow-x: clip;
     color: var(--fg);
     background:
       radial-gradient(1200px 600px at 12% -10%, rgba(216, 255, 74, 0.08), transparent 55%),
@@ -170,41 +172,78 @@ button.btn-accent:hover {
 
 @keyframes shelf-drift {
   from {
-    transform: scale(1.06) translate3d(1.2%, 0, 0);
+    transform: scale(1.08) translate3d(1.2%, 0, 0);
   }
   to {
-    transform: scale(1.06) translate3d(-1.2%, 0, 0);
+    transform: scale(1.08) translate3d(-1.2%, 0, 0);
   }
 }
 
-@keyframes accent-sweep {
-  0%,
-  100% {
-    opacity: 0.55;
-  }
-  50% {
-    opacity: 0.9;
+.hero-stage {
+  min-height: 100svh;
+}
+
+@supports not (min-height: 100svh) {
+  .hero-stage {
+    min-height: 100vh;
   }
 }
 
-.hero-shelf-drift {
-  animation: shelf-drift 28s ease-in-out infinite alternate;
-  will-change: transform;
+@media (min-width: 768px) {
+  .hero-stage {
+    min-height: min(92vh, 920px);
+  }
 }
 
-.hero-accent-sweep {
-  background: linear-gradient(
-    105deg,
-    rgba(216, 255, 74, 0.1) 0%,
-    rgba(216, 255, 74, 0.03) 32%,
-    transparent 58%
-  );
-  animation: accent-sweep 7s ease-in-out infinite;
+/* Mobile: show the shelves; crop to the lit yellow spines */
+.hero-shelf-media {
+  object-position: 78% 42%;
+}
+
+@media (min-width: 768px) {
+  .hero-shelf-media {
+    object-position: 72% 45%;
+    animation: shelf-drift 28s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+}
+
+/* Mobile: bottom stage for copy — shelves stay visible above */
+.hero-veil {
+  background:
+    linear-gradient(
+      to top,
+      rgba(7, 7, 8, 0.97) 0%,
+      rgba(7, 7, 8, 0.88) 28%,
+      rgba(7, 7, 8, 0.35) 52%,
+      rgba(7, 7, 8, 0.2) 72%,
+      rgba(7, 7, 8, 0.45) 100%
+    ),
+    linear-gradient(to right, rgba(7, 7, 8, 0.25), transparent 55%);
+}
+
+@media (min-width: 768px) {
+  .hero-veil {
+    background:
+      radial-gradient(
+        115% 90% at 16% 48%,
+        rgba(7, 7, 8, 0.94) 0%,
+        rgba(7, 7, 8, 0.72) 36%,
+        rgba(7, 7, 8, 0.28) 60%,
+        rgba(7, 7, 8, 0.5) 100%
+      ),
+      linear-gradient(to top, var(--bg) 0%, transparent 28%),
+      linear-gradient(
+        105deg,
+        rgba(216, 255, 74, 0.08) 0%,
+        rgba(216, 255, 74, 0.02) 30%,
+        transparent 55%
+      );
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-shelf-drift,
-  .hero-accent-sweep {
+  .hero-shelf-media {
     animation: none;
   }
 }
