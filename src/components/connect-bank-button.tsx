@@ -36,8 +36,13 @@ export function ConnectBankButton() {
         Get paid in cash
       </h2>
       <p className="mt-2 text-sm text-[var(--fg-muted)]">
-        Connect Stripe once. On every sale, <strong className="text-white">85% cash</strong> goes
-        straight to your Stripe balance / bank. BotShelf keeps 15%.
+        Connect Stripe once. On every paid sale you keep{" "}
+        <strong className="text-white">85%</strong> (e.g. £8.50 of a £10 listing); BotShelf keeps{" "}
+        <strong className="text-white">15%</strong>.{" "}
+        <a href="/fees" className="text-white underline-offset-4 hover:underline">
+          Seller fees
+        </a>
+        .
       </p>
       <p className="mt-3 text-xs text-[var(--fg-dim)]">
         Signed in as {session?.user?.email}

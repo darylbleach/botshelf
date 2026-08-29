@@ -35,9 +35,13 @@ export default async function SellPage({
             Sell on BotShelf
           </h1>
           <p className="mt-3 max-w-xl text-[var(--fg-muted)]">
-            List a template, set a price, get paid in cash. Buyers check out on BotShelf;
-            Stripe Connect sends <span className="text-white">85%</span> to your bank and
-            keeps <span className="text-white">15%</span> for the platform.
+            List a template, set a price, get paid in cash. On every paid sale you keep{" "}
+            <span className="text-white">85%</span>; BotShelf keeps{" "}
+            <span className="text-white">15%</span>.{" "}
+            <Link href="/fees" className="text-white underline-offset-4 hover:underline">
+              See seller fees
+            </Link>
+            .
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -53,6 +57,24 @@ export default async function SellPage({
           >
             List a template
           </Link>
+        </div>
+      </div>
+
+      <div className="mt-8 grid gap-3 rounded-2xl border border-[var(--line-strong)] bg-[rgba(17,17,20,0.92)] p-5 sm:grid-cols-3">
+        <div>
+          <p className="text-xs uppercase tracking-[0.16em] text-[var(--fg-dim)]">Your share</p>
+          <p className="mt-1 font-[family-name:var(--font-display)] text-3xl font-bold">85%</p>
+          <p className="mt-1 text-sm text-[var(--fg-muted)]">To your Stripe / bank</p>
+        </div>
+        <div>
+          <p className="text-xs uppercase tracking-[0.16em] text-[var(--fg-dim)]">Platform fee</p>
+          <p className="mt-1 font-[family-name:var(--font-display)] text-3xl font-bold">15%</p>
+          <p className="mt-1 text-sm text-[var(--fg-muted)]">Kept by BotShelf</p>
+        </div>
+        <div>
+          <p className="text-xs uppercase tracking-[0.16em] text-[var(--fg-dim)]">Example</p>
+          <p className="mt-1 font-[family-name:var(--font-display)] text-3xl font-bold">£10 → £8.50</p>
+          <p className="mt-1 text-sm text-[var(--fg-muted)]">You earn £8.50 on a £10 listing</p>
         </div>
       </div>
 

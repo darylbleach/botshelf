@@ -80,8 +80,13 @@ export default function SubmitPage() {
         Submit a template
       </h1>
       <p className="mt-3 text-[var(--fg-muted)]">
-        You set the price. Paid listings pay you <span className="text-white">85% cash</span> via
-        Stripe Connect on every sale.
+        You set the price. On every paid sale you keep{" "}
+        <span className="text-white">85%</span> (BotShelf keeps 15%) — e.g. £8.50 of a £10
+        listing, paid via Stripe Connect.{" "}
+        <a href="/fees" className="text-white underline-offset-4 hover:underline">
+          Seller fees
+        </a>
+        .
       </p>
 
       <form onSubmit={onSubmit} className="mt-10 space-y-5">
@@ -196,8 +201,8 @@ export default function SubmitPage() {
                 />
               </label>
               <p className="sm:col-span-2 text-xs text-[var(--fg-dim)]">
-                Buyers pay your price. You keep 85% cash; BotShelf keeps 15%. Change anytime in
-                Studio.
+                Buyers pay your price. You keep 85% (e.g. £8.50 of £10); BotShelf keeps 15%.
+                Change anytime in Studio. See Seller fees.
               </p>
             </div>
           )}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 const legal = [
+  { href: "/fees", label: "Seller fees" },
   { href: "/terms", label: "Terms of service" },
   { href: "/privacy", label: "Privacy policy" },
   { href: "/cookies", label: "Cookie policy" },

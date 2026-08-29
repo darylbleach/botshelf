@@ -73,15 +73,28 @@ export default function TermsPage() {
       <LegalSection title="5. The marketplace">
         <p>
           BotShelf is a marketplace for Grok Bot templates and related listing information. Listings
-          may be free or paid. Paid checkouts are processed by Stripe. Where Stripe Connect is
-          enabled for a seller, we aim to route approximately 85% of the purchase price to the
-          seller and retain approximately 15% as a platform fee, subject to Stripe fees, taxes,
-          chargebacks and applicable law.
+          may be free or paid. Paid checkouts are processed by Stripe. Installation of bots happens
+          on third-party platforms such as x.ai. We do not operate those platforms and are not
+          responsible for their availability, pricing, policies or bot behaviour after you leave
+          BotShelf.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="5A. Seller fees (what you earn)">
+        <p>
+          On each paid sale of your listing, <span className="text-white">you keep 85%</span> of
+          the listing price and BotShelf keeps <span className="text-white">15%</span> as a
+          platform fee. Example: a £10.00 listing pays you £8.50 and BotShelf £1.50.
         </p>
         <p>
-          Installation of bots happens on third-party platforms such as x.ai. We do not operate
-          those platforms and are not responsible for their availability, pricing, policies or bot
-          behaviour after you leave BotShelf.
+          Where Stripe Connect is enabled for your seller account, the seller share is routed to
+          your connected Stripe balance for payout to your bank. Stripe’s own processing fees,
+          taxes, chargebacks, refunds and applicable law may affect the net amount you ultimately
+          receive. See also our plain-English{" "}
+          <Link href="/fees" className="text-white underline-offset-4 hover:underline">
+            Seller fees
+          </Link>{" "}
+          page.
         </p>
       </LegalSection>
 
