@@ -71,7 +71,7 @@ export function SiteHeader() {
           })}
           <Link
             href="/submit"
-            className="ml-1 inline-flex min-h-10 items-center rounded-full bg-[var(--accent)] px-3.5 py-1.5 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110"
+            className="btn-accent ml-1 inline-flex min-h-10 items-center rounded-full px-3.5 py-1.5 text-sm font-semibold transition"
           >
             List a template
           </Link>
@@ -134,7 +134,7 @@ export function SiteHeader() {
             <Link
               href="/submit"
               onClick={() => setOpen(false)}
-              className="mt-2 inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--accent)] px-4 text-base font-semibold text-[var(--accent-ink)]"
+              className="btn-accent mt-2 inline-flex min-h-12 items-center justify-center rounded-full px-4 text-base font-semibold"
             >
               List a template
             </Link>
