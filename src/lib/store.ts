@@ -1,86 +1,84 @@
-import { promises as fs } from "fs";
-import path from "path";
-import { SEED_TEMPLATES } from "./seed";
+import { desc, eq, sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import {
+  purchases as purchasesTable,
+  sellers as sellersTable,
+  templates as templatesTable,
+  workspace as workspaceTable,
+} from "@/lib/db/schema";
 import type { Purchase, Seller, Template, WorkspaceItem } from "./types";
 
-// Vercel serverless is read-only outside /tmp. Keep local files under src/data,
-// and use /tmp on Vercel so marketplace reads/writes don't 500.
-const DATA_DIR =
-  process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME
-    ? path.join("/tmp", "botshelf-data")
-    : path.join(process.cwd(), "src/data");
-const TEMPLATES_FILE = path.join(DATA_DIR, "templates.json");
-const PURCHASES_FILE = path.join(DATA_DIR, "purchases.json");
-const WORKSPACE_FILE = path.join(DATA_DIR, "workspace.json");
-const SELLERS_FILE = path.join(DATA_DIR, "sellers.json");
-/** Bump to replace stale /tmp catalogs (placeholders, demo bots). */
-const CATALOG_VERSION = "empty-v1-no-seed-bots";
-const CATALOG_VERSION_FILE = path.join(DATA_DIR, "catalog-version.txt");
-
-let ensurePromise: Promise<void> | null = null;
-
-async function ensureFiles() {
-  if (!ensurePromise) {
-    ensurePromise = (async () => {
-      await fs.mkdir(DATA_DIR, { recursive: true });
-      const seeds: Array<[string, unknown]> = [
-        [TEMPLATES_FILE, SEED_TEMPLATES],
-        [PURCHASES_FILE, []],
-        [WORKSPACE_FILE, []],
-        [SELLERS_FILE, []],
-      ];
-      for (const [file, seed] of seeds) {
-        try {
-          await fs.access(file);
-        } catch {
-          await fs.writeFile(file, JSON.stringify(seed, null, 2));
-        }
-      }
-
-      // Replace dishonest /tmp catalogs from earlier deploys once per version bump.
-      let version = "";
-      try {
-        version = (await fs.readFile(CATALOG_VERSION_FILE, "utf8")).trim();
-      } catch {
-        version = "";
-      }
-      if (version !== CATALOG_VERSION) {
-        await fs.writeFile(
-          TEMPLATES_FILE,
-          JSON.stringify(SEED_TEMPLATES, null, 2),
-        );
-        await fs.writeFile(CATALOG_VERSION_FILE, CATALOG_VERSION);
-      }
-    })().catch((err) => {
-      ensurePromise = null;
-      throw err;
-    });
-  }
-  await ensurePromise;
+function mapTemplate(row: typeof templatesTable.$inferSelect): Template {
+  const t: Template = {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    description: row.description,
+    longDescription: row.longDescription,
+    category: row.category as Template["category"],
+    author: row.author,
+    authorId: row.authorId,
+    priceCents: row.priceCents,
+    copies: row.copies,
+    views: row.views,
+    featured: row.featured,
+    createdAt: row.createdAt.toISOString(),
+    integrations: row.integrations as Template["integrations"],
+    instructions: row.instructions,
+    templateUrl: row.templateUrl,
+    status: row.status as Template["status"],
+  };
+  if (row.salePriceCents != null) t.salePriceCents = row.salePriceCents;
+  if (row.stripePriceId) t.stripePriceId = row.stripePriceId;
+  if (row.stripeProductId) t.stripeProductId = row.stripeProductId;
+  return t;
 }
 
-async function readJson<T>(file: string, fallback: T): Promise<T> {
-  await ensureFiles();
-  try {
-    const raw = await fs.readFile(file, "utf8");
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
+function mapSeller(row: typeof sellersTable.$inferSelect): Seller {
+  return {
+    authorId: row.authorId,
+    author: row.author,
+    email: row.email,
+    userId: row.userId,
+    stripeAccountId: row.stripeAccountId ?? undefined,
+    payoutsEnabled: row.payoutsEnabled,
+    detailsSubmitted: row.detailsSubmitted,
+    updatedAt: row.updatedAt.toISOString(),
+  };
 }
 
-async function writeJson<T>(file: string, data: T) {
-  await ensureFiles();
-  await fs.writeFile(file, JSON.stringify(data, null, 2));
+function mapPurchase(row: typeof purchasesTable.$inferSelect): Purchase {
+  return {
+    id: row.id,
+    templateId: row.templateId,
+    buyerEmail: row.buyerEmail,
+    amountCents: row.amountCents,
+    sellerPayoutCents: row.sellerPayoutCents,
+    platformFeeCents: row.platformFeeCents,
+    creatorCredits: row.sellerPayoutCents,
+    stripeSessionId: row.stripeSessionId ?? undefined,
+    stripeAccountId: row.stripeAccountId ?? undefined,
+    createdAt: row.createdAt.toISOString(),
+  };
 }
 
 export async function listTemplates(): Promise<Template[]> {
-  return readJson<Template[]>(TEMPLATES_FILE, SEED_TEMPLATES);
+  const rows = await db
+    .select()
+    .from(templatesTable)
+    .orderBy(desc(templatesTable.createdAt));
+  return rows.map(mapTemplate);
 }
 
 export async function getTemplate(idOrSlug: string): Promise<Template | undefined> {
-  const templates = await listTemplates();
-  return templates.find((t) => t.id === idOrSlug || t.slug === idOrSlug);
+  const rows = await db
+    .select()
+    .from(templatesTable)
+    .where(
+      sql`${templatesTable.id} = ${idOrSlug} OR ${templatesTable.slug} = ${idOrSlug}`,
+    )
+    .limit(1);
+  return rows[0] ? mapTemplate(rows[0]) : undefined;
 }
 
 export async function createTemplate(
@@ -88,21 +86,34 @@ export async function createTemplate(
     featured?: boolean;
     status?: Template["status"];
     views?: number;
+    userId?: string;
   },
 ): Promise<Template> {
-  const templates = await listTemplates();
-  const template: Template = {
-    ...input,
-    id: `tpl_${Date.now().toString(36)}`,
-    copies: 0,
-    views: input.views ?? 0,
-    createdAt: new Date().toISOString(),
-    featured: input.featured ?? false,
-    status: input.status ?? "pending",
-  };
-  templates.unshift(template);
-  await writeJson(TEMPLATES_FILE, templates);
-  return template;
+  const id = `tpl_${Date.now().toString(36)}`;
+  const [row] = await db
+    .insert(templatesTable)
+    .values({
+      id,
+      slug: input.slug,
+      title: input.title,
+      description: input.description,
+      longDescription: input.longDescription,
+      category: input.category,
+      author: input.author,
+      authorId: input.authorId,
+      userId: input.userId,
+      priceCents: input.priceCents,
+      salePriceCents: input.salePriceCents,
+      integrations: input.integrations,
+      instructions: input.instructions,
+      templateUrl: input.templateUrl,
+      featured: input.featured ?? false,
+      status: input.status ?? "pending",
+      views: input.views ?? 0,
+      copies: 0,
+    })
+    .returning();
+  return mapTemplate(row);
 }
 
 export async function updateTemplate(
@@ -126,10 +137,10 @@ export async function updateTemplate(
     >
   >,
 ): Promise<Template | undefined> {
-  const templates = await listTemplates();
-  const idx = templates.findIndex((t) => t.id === id || t.slug === id);
-  if (idx < 0) return undefined;
-  const next: Template = { ...templates[idx], ...patch };
+  const existing = await getTemplate(id);
+  if (!existing) return undefined;
+
+  const next: Template = { ...existing, ...patch };
   if ("salePriceCents" in patch && patch.salePriceCents == null) {
     delete next.salePriceCents;
   }
@@ -141,73 +152,153 @@ export async function updateTemplate(
   ) {
     delete next.salePriceCents;
   }
-  templates[idx] = next;
-  await writeJson(TEMPLATES_FILE, templates);
-  return next;
+
+  const [row] = await db
+    .update(templatesTable)
+    .set({
+      title: next.title,
+      description: next.description,
+      longDescription: next.longDescription,
+      priceCents: next.priceCents,
+      salePriceCents: next.salePriceCents ?? null,
+      stripePriceId: next.stripePriceId,
+      stripeProductId: next.stripeProductId,
+      status: next.status,
+      featured: next.featured,
+      instructions: next.instructions,
+      templateUrl: next.templateUrl,
+      category: next.category,
+      integrations: next.integrations,
+    })
+    .where(
+      sql`${templatesTable.id} = ${id} OR ${templatesTable.slug} = ${id}`,
+    )
+    .returning();
+  return row ? mapTemplate(row) : undefined;
 }
 
 export async function bumpCopies(templateId: string) {
-  const templates = await listTemplates();
-  const next = templates.map((t) =>
-    t.id === templateId ? { ...t, copies: t.copies + 1 } : t,
-  );
-  await writeJson(TEMPLATES_FILE, next);
+  await db
+    .update(templatesTable)
+    .set({ copies: sql`${templatesTable.copies} + 1` })
+    .where(eq(templatesTable.id, templateId));
 }
 
 export async function bumpViews(templateId: string) {
-  const templates = await listTemplates();
-  const next = templates.map((t) =>
-    t.id === templateId || t.slug === templateId
-      ? { ...t, views: (t.views ?? 0) + 1 }
-      : t,
-  );
-  await writeJson(TEMPLATES_FILE, next);
+  await db
+    .update(templatesTable)
+    .set({ views: sql`${templatesTable.views} + 1` })
+    .where(
+      sql`${templatesTable.id} = ${templateId} OR ${templatesTable.slug} = ${templateId}`,
+    );
 }
 
 export async function listPurchases(): Promise<Purchase[]> {
-  return readJson<Purchase[]>(PURCHASES_FILE, []);
+  const rows = await db
+    .select()
+    .from(purchasesTable)
+    .orderBy(desc(purchasesTable.createdAt));
+  return rows.map(mapPurchase);
 }
 
 export async function addPurchase(purchase: Purchase) {
-  const purchases = await listPurchases();
   if (purchase.stripeSessionId) {
-    const exists = purchases.some((p) => p.stripeSessionId === purchase.stripeSessionId);
-    if (exists) return;
+    const existing = await db
+      .select()
+      .from(purchasesTable)
+      .where(eq(purchasesTable.stripeSessionId, purchase.stripeSessionId))
+      .limit(1);
+    if (existing.length) return;
   }
-  purchases.unshift(purchase);
-  await writeJson(PURCHASES_FILE, purchases);
+  await db.insert(purchasesTable).values({
+    id: purchase.id,
+    templateId: purchase.templateId,
+    buyerEmail: purchase.buyerEmail,
+    amountCents: purchase.amountCents,
+    sellerPayoutCents: purchase.sellerPayoutCents,
+    platformFeeCents: purchase.platformFeeCents,
+    stripeSessionId: purchase.stripeSessionId,
+    stripeAccountId: purchase.stripeAccountId,
+    createdAt: new Date(purchase.createdAt),
+  });
   await bumpCopies(purchase.templateId);
   await addToWorkspace(purchase.templateId);
 }
 
-export async function listWorkspace(): Promise<WorkspaceItem[]> {
-  return readJson<WorkspaceItem[]>(WORKSPACE_FILE, []);
+export async function listWorkspace(userId?: string): Promise<WorkspaceItem[]> {
+  if (!userId) return [];
+  const rows = await db
+    .select()
+    .from(workspaceTable)
+    .where(eq(workspaceTable.userId, userId))
+    .orderBy(desc(workspaceTable.addedAt));
+  return rows.map((r) => ({
+    templateId: r.templateId,
+    addedAt: r.addedAt.toISOString(),
+  }));
 }
 
-export async function addToWorkspace(templateId: string) {
-  const items = await listWorkspace();
-  if (items.some((i) => i.templateId === templateId)) return items;
-  items.unshift({ templateId, addedAt: new Date().toISOString() });
-  await writeJson(WORKSPACE_FILE, items);
-  return items;
+export async function addToWorkspace(templateId: string, userId?: string) {
+  if (!userId) return listWorkspace();
+  await db
+    .insert(workspaceTable)
+    .values({ userId, templateId })
+    .onConflictDoNothing();
+  return listWorkspace(userId);
 }
 
 export async function listSellers(): Promise<Seller[]> {
-  return readJson<Seller[]>(SELLERS_FILE, []);
+  const rows = await db.select().from(sellersTable);
+  return rows.map(mapSeller);
 }
 
 export async function getSeller(authorId: string): Promise<Seller | undefined> {
-  const sellers = await listSellers();
-  return sellers.find((s) => s.authorId === authorId);
+  const rows = await db
+    .select()
+    .from(sellersTable)
+    .where(eq(sellersTable.authorId, authorId))
+    .limit(1);
+  return rows[0] ? mapSeller(rows[0]) : undefined;
 }
 
-export async function upsertSeller(seller: Seller): Promise<Seller> {
-  const sellers = await listSellers();
-  const idx = sellers.findIndex((s) => s.authorId === seller.authorId);
-  if (idx >= 0) sellers[idx] = seller;
-  else sellers.unshift(seller);
-  await writeJson(SELLERS_FILE, sellers);
-  return seller;
+export async function getSellerByUserId(userId: string): Promise<Seller | undefined> {
+  const rows = await db
+    .select()
+    .from(sellersTable)
+    .where(eq(sellersTable.userId, userId))
+    .limit(1);
+  return rows[0] ? mapSeller(rows[0]) : undefined;
+}
+
+export async function upsertSeller(
+  seller: Seller & { userId: string },
+): Promise<Seller> {
+  const [row] = await db
+    .insert(sellersTable)
+    .values({
+      authorId: seller.authorId,
+      userId: seller.userId,
+      author: seller.author,
+      email: seller.email,
+      stripeAccountId: seller.stripeAccountId,
+      payoutsEnabled: seller.payoutsEnabled,
+      detailsSubmitted: seller.detailsSubmitted,
+      updatedAt: new Date(seller.updatedAt),
+    })
+    .onConflictDoUpdate({
+      target: sellersTable.authorId,
+      set: {
+        author: seller.author,
+        email: seller.email,
+        stripeAccountId: seller.stripeAccountId,
+        payoutsEnabled: seller.payoutsEnabled,
+        detailsSubmitted: seller.detailsSubmitted,
+        updatedAt: new Date(seller.updatedAt),
+        userId: seller.userId,
+      },
+    })
+    .returning();
+  return mapSeller(row);
 }
 
 export async function creatorEarnings() {
@@ -322,7 +413,6 @@ export async function getSellerAnalytics(authorId: string) {
     })
     .sort((a, b) => b.cashCents - a.cashCents);
 
-  // Last 14 days series
   const days: Array<{ date: string; sales: number; cashCents: number; views: number }> = [];
   for (let i = 13; i >= 0; i--) {
     const d = new Date();
@@ -337,7 +427,6 @@ export async function getSellerAnalytics(authorId: string) {
         (sum, p) => sum + (p.sellerPayoutCents ?? p.creatorCredits ?? 0),
         0,
       ),
-      // views are cumulative; show 0 for daily unless we store events — approximate evenly
       views: 0,
     });
   }
