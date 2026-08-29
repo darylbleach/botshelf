@@ -31,7 +31,10 @@ export interface Template {
   authorId: string;
   priceCents: number;
   salePriceCents?: number;
+  stripePriceId?: string;
+  stripeProductId?: string;
   copies: number;
+  views: number;
   featured: boolean;
   createdAt: string;
   integrations: Integration[];
@@ -45,9 +48,25 @@ export interface Purchase {
   templateId: string;
   buyerEmail: string;
   amountCents: number;
-  creatorCredits: number;
+  /** Cash sent to seller via Connect (85%). */
+  sellerPayoutCents: number;
+  /** BotShelf platform fee (15%). */
+  platformFeeCents: number;
+  /** @deprecated alias of sellerPayoutCents */
+  creatorCredits?: number;
   stripeSessionId?: string;
+  stripeAccountId?: string;
   createdAt: string;
+}
+
+export interface Seller {
+  authorId: string;
+  author: string;
+  email: string;
+  stripeAccountId?: string;
+  payoutsEnabled: boolean;
+  detailsSubmitted: boolean;
+  updatedAt: string;
 }
 
 export interface WorkspaceItem {

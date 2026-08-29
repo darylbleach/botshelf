@@ -2,6 +2,9 @@ import Stripe from "stripe";
 
 let client: Stripe | null = null;
 
+/** Platform keeps 15%; seller receives 85% in cash via Connect. */
+export const PLATFORM_FEE_BPS = 1500;
+
 export function getStripe(): Stripe | null {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key || key.includes("...")) return null;
@@ -16,7 +19,15 @@ export function appUrl(path = "") {
   return `${base.replace(/\/$/, "")}${path}`;
 }
 
-/** Creator keeps 85% as credits; platform fee 15%. */
+export function platformFeeFromSale(amountCents: number) {
+  return Math.round((amountCents * PLATFORM_FEE_BPS) / 10000);
+}
+
+export function sellerCashFromSale(amountCents: number) {
+  return amountCents - platformFeeFromSale(amountCents);
+}
+
+/** @deprecated use sellerCashFromSale — kept briefly for older call sites */
 export function creatorCreditsFromSale(amountCents: number) {
-  return Math.round(amountCents * 0.85);
+  return sellerCashFromSale(amountCents);
 }
