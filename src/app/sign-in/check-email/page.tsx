@@ -22,6 +22,10 @@ export default async function CheckEmailPage({
           <>We sent a sign-in link to your email. Open it to continue.</>
         )}
       </p>
+      <p className="mt-4 text-sm text-[var(--fg-dim)]">
+        Not in your inbox? Check Junk / Spam, then mark it as Not junk so future BotShelf
+        sign-in emails land correctly.
+      </p>
     </div>
   );
 }
