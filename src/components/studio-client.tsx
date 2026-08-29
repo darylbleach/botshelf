@@ -46,41 +46,28 @@ type Analytics = {
   series: Array<{ date: string; sales: number; cashCents: number }>;
 };
 
-type Author = { authorId: string; author: string };
-
-export function StudioClient({
-  initialAuthorId,
-}: {
-  initialAuthorId?: string;
-}) {
-  const [authors, setAuthors] = useState<Author[]>([]);
-  const [authorId, setAuthorId] = useState(initialAuthorId ?? "");
+export function StudioClient() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    void fetch("/api/analytics")
-      .then((r) => r.json())
-      .then((d) => {
-        if (cancelled) return;
-        setAuthors(d.authors ?? []);
-        setAuthorId((current) => current || d.authors?.[0]?.authorId || "");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  function load() {
+    startTransition(async () => {
+      const res = await fetch("/api/analytics");
+      const data = await res.json();
+      if (!res.ok) {
+        setMessage(data.error ?? "Could not load studio");
+        return;
+      }
+      setAnalytics(data.analytics ?? null);
+      setEmail(data.author?.email ?? null);
+    });
+  }
 
   useEffect(() => {
-    if (!authorId) return;
-    startTransition(async () => {
-      const res = await fetch(`/api/analytics?authorId=${encodeURIComponent(authorId)}`);
-      const data = await res.json();
-      setAnalytics(data.analytics ?? null);
-    });
-  }, [authorId]);
+    load();
+  }, []);
 
   const maxCash = useMemo(
     () => Math.max(1, ...(analytics?.series.map((d) => d.cashCents) ?? [1])),
@@ -102,7 +89,6 @@ export function StudioClient({
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        authorId,
         priceCents,
         salePriceCents,
       }),
@@ -113,10 +99,7 @@ export function StudioClient({
       return;
     }
     setMessage(`Saved pricing for ${data.template.title}`);
-    const refreshed = await fetch(
-      `/api/analytics?authorId=${encodeURIComponent(authorId)}`,
-    ).then((r) => r.json());
-    setAnalytics(refreshed.analytics ?? null);
+    load();
   }
 
   return (
@@ -131,22 +114,20 @@ export function StudioClient({
           </h1>
           <p className="mt-3 max-w-xl text-[var(--fg-muted)]">
             Set your own prices, run sales, and track views, conversion, and cash.
+            {email ? (
+              <>
+                {" "}
+                Signed in as <span className="text-white">{email}</span>.
+              </>
+            ) : null}
           </p>
         </div>
-        <label className="block min-w-[220px] space-y-1.5">
-          <span className="text-xs text-[var(--fg-dim)]">Account</span>
-          <select
-            value={authorId}
-            onChange={(e) => setAuthorId(e.target.value)}
-            className="w-full rounded-full border border-[var(--line-strong)] bg-[rgba(17,17,20,0.9)] px-4 py-2.5 text-sm outline-none"
-          >
-            {authors.map((a) => (
-              <option key={a.authorId} value={a.authorId}>
-                {a.author}
-              </option>
-            ))}
-          </select>
-        </label>
+        <Link
+          href="/submit"
+          className="btn-accent inline-flex min-h-11 items-center justify-center rounded-full px-5 py-3 text-sm font-semibold"
+        >
+          List a template
+        </Link>
       </div>
 
       {message && (
@@ -155,119 +136,96 @@ export function StudioClient({
         </p>
       )}
 
+      {pending && !analytics && (
+        <p className="text-sm text-[var(--fg-muted)]">Loading your studio…</p>
+      )}
+
       {analytics && (
         <>
-          <div
-            className={`grid gap-3 sm:grid-cols-2 lg:grid-cols-4 ${pending ? "opacity-70" : ""}`}
-          >
-            <Stat label="Views" value={analytics.totals.views.toLocaleString()} />
-            <Stat label="Sales" value={String(analytics.totals.sales)} />
-            <Stat
-              label="Cash earned (85%)"
-              value={formatPrice(analytics.totals.cashCents)}
-            />
-            <Stat
-              label="Conversion"
-              value={`${analytics.totals.conversion}%`}
-            />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Metric label="Views" value={String(analytics.totals.views)} />
+            <Metric label="Sales" value={String(analytics.totals.sales)} />
+            <Metric label="Cash" value={formatPrice(analytics.totals.cashCents)} />
+            <Metric label="Conversion" value={`${analytics.totals.conversion}%`} />
           </div>
 
-          <section className="rounded-2xl border border-[var(--line)] bg-[rgba(17,17,20,0.8)] p-5">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold">
-                Cash last 14 days
-              </h2>
-              <p className="text-xs text-[var(--fg-dim)]">
-                Gross {formatPrice(analytics.totals.grossCents)} · avg order{" "}
-                {formatPrice(analytics.totals.avgOrderCents)}
-              </p>
-            </div>
-            <div className="flex h-36 items-end gap-1.5">
-              {analytics.series.map((day) => (
-                <div key={day.date} className="flex flex-1 flex-col items-center gap-1">
+          <div className="rounded-2xl border border-[var(--line)] bg-[rgba(17,17,20,0.88)] p-5">
+            <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold">
+              Last 14 days
+            </h2>
+            <div className="mt-4 flex h-28 items-end gap-1.5">
+              {analytics.series.map((d) => (
+                <div key={d.date} className="flex flex-1 flex-col items-center gap-1">
                   <div
                     className="w-full rounded-t-md bg-[var(--accent)]/80 transition"
-                    style={{
-                      height: `${Math.max(4, (day.cashCents / maxCash) * 100)}%`,
-                    }}
-                    title={`${day.date}: ${formatPrice(day.cashCents)}`}
+                    style={{ height: `${Math.max(4, (d.cashCents / maxCash) * 100)}%` }}
+                    title={`${d.date}: ${formatPrice(d.cashCents)}`}
                   />
                 </div>
               ))}
             </div>
-            <div className="mt-2 flex justify-between text-[10px] text-[var(--fg-dim)]">
-              <span>{analytics.series[0]?.date.slice(5)}</span>
-              <span>{analytics.series.at(-1)?.date.slice(5)}</span>
-            </div>
-          </section>
+          </div>
 
-          <section>
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold">
-                Price your bots
-              </h2>
-              <Link
-                href="/submit"
-                className="text-sm text-[var(--accent)] hover:underline"
-              >
-                + New template
-              </Link>
-            </div>
-            <div className="space-y-3">
-              {analytics.byTemplate.map((t) => (
-                <PriceRow key={t.id} template={t} onSave={savePrice} />
-              ))}
-              {analytics.byTemplate.length === 0 && (
-                <p className="rounded-xl border border-dashed border-[var(--line)] px-4 py-8 text-center text-[var(--fg-muted)]">
-                  No templates yet.{" "}
-                  <Link href="/submit" className="text-[var(--accent)]">
-                    Submit one
-                  </Link>
-                  .
-                </p>
-              )}
-            </div>
-          </section>
-
-          <section>
-            <h2 className="mb-4 font-[family-name:var(--font-display)] text-xl font-semibold">
-              Recent sales
+          <div className="space-y-3">
+            <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold">
+              Your templates
             </h2>
-            <ul className="space-y-2">
-              {analytics.recentSales.map((s) => (
-                <li
-                  key={s.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--line)] bg-[rgba(17,17,20,0.75)] px-4 py-3 text-sm"
-                >
-                  <span>
-                    <span className="font-medium">{s.templateTitle}</span>
-                    <span className="text-[var(--fg-dim)]"> · {s.buyerEmail}</span>
-                  </span>
-                  <span className="text-[var(--fg-muted)]">
-                    {formatPrice(s.amountCents)} → you {formatPrice(s.sellerPayoutCents)}
-                  </span>
-                </li>
-              ))}
-              {analytics.recentSales.length === 0 && (
-                <li className="rounded-xl border border-dashed border-[var(--line)] px-4 py-8 text-center text-[var(--fg-muted)]">
-                  No sales on this account yet.
-                </li>
-              )}
-            </ul>
-          </section>
+            {analytics.byTemplate.length === 0 && (
+              <p className="text-sm text-[var(--fg-muted)]">
+                No listings yet.{" "}
+                <Link href="/submit" className="text-white underline-offset-4 hover:underline">
+                  Publish your first bot
+                </Link>
+                .
+              </p>
+            )}
+            {analytics.byTemplate.map((t) => (
+              <PriceRow key={t.id} template={t} onSave={savePrice} />
+            ))}
+          </div>
+
+          {analytics.recentSales.length > 0 && (
+            <div className="space-y-3">
+              <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold">
+                Recent sales
+              </h2>
+              <div className="overflow-x-auto rounded-2xl border border-[var(--line)]">
+                <table className="min-w-full text-left text-sm">
+                  <thead className="bg-white/5 text-[var(--fg-dim)]">
+                    <tr>
+                      <th className="px-4 py-3 font-medium">Template</th>
+                      <th className="px-4 py-3 font-medium">Buyer</th>
+                      <th className="px-4 py-3 font-medium">Your cash</th>
+                      <th className="px-4 py-3 font-medium">When</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analytics.recentSales.map((s) => (
+                      <tr key={s.id} className="border-t border-[var(--line)]">
+                        <td className="px-4 py-3">{s.templateTitle}</td>
+                        <td className="px-4 py-3 text-[var(--fg-muted)]">{s.buyerEmail}</td>
+                        <td className="px-4 py-3">{formatPrice(s.sellerPayoutCents)}</td>
+                        <td className="px-4 py-3 text-[var(--fg-dim)]">
+                          {new Date(s.createdAt).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-[var(--line)] bg-[rgba(17,17,20,0.8)] p-5">
-      <p className="text-sm text-[var(--fg-dim)]">{label}</p>
-      <p className="mt-2 font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight">
-        {value}
-      </p>
+    <div className="rounded-2xl border border-[var(--line)] bg-[rgba(17,17,20,0.88)] p-4">
+      <p className="text-xs uppercase tracking-wide text-[var(--fg-dim)]">{label}</p>
+      <p className="mt-2 font-[family-name:var(--font-display)] text-2xl font-bold">{value}</p>
     </div>
   );
 }
@@ -292,49 +250,35 @@ function PriceRow({
     );
   }, [template.priceCents, template.salePriceCents]);
 
-  const takeHome = Math.round(Number(sale || price || 0) * 100 * 0.85) / 100;
-
   return (
-    <div className="rounded-2xl border border-[var(--line)] bg-[rgba(17,17,20,0.85)] p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <Link
-            href={`/templates/${template.slug}`}
-            className="font-[family-name:var(--font-display)] text-lg font-semibold hover:text-[var(--accent)]"
-          >
-            {template.title}
-          </Link>
-          <p className="mt-1 text-xs text-[var(--fg-dim)]">
-            {template.views} views · {template.sales} sales · {template.conversion}% conv ·{" "}
-            {formatPrice(template.cashCents)} cash
-          </p>
-        </div>
-        <p className="text-xs text-[var(--fg-muted)]">
-          You keep ~${takeHome.toFixed(2)} / sale
+    <div className="flex flex-col gap-3 rounded-2xl border border-[var(--line)] bg-[rgba(17,17,20,0.88)] p-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <Link
+          href={`/templates/${template.slug}`}
+          className="font-[family-name:var(--font-display)] font-semibold hover:text-[var(--accent)]"
+        >
+          {template.title}
+        </Link>
+        <p className="mt-1 text-xs text-[var(--fg-dim)]">
+          {template.views} views · {template.sales} sales · {template.conversion}% conv
         </p>
       </div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
-        <label className="block space-y-1">
-          <span className="text-xs text-[var(--fg-dim)]">List price (USD)</span>
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="space-y-1">
+          <span className="text-xs text-[var(--fg-dim)]">Price $</span>
           <input
-            type="number"
-            min="0"
-            step="1"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
-            className="w-full rounded-full border border-[var(--line-strong)] bg-black/30 px-4 py-2.5 text-sm outline-none"
+            className="w-24 rounded-full border border-[var(--line-strong)] bg-black/30 px-3 py-2 text-sm outline-none"
           />
         </label>
-        <label className="block space-y-1">
-          <span className="text-xs text-[var(--fg-dim)]">Sale price (optional)</span>
+        <label className="space-y-1">
+          <span className="text-xs text-[var(--fg-dim)]">Sale $</span>
           <input
-            type="number"
-            min="0"
-            step="1"
             value={sale}
             onChange={(e) => setSale(e.target.value)}
-            placeholder="Leave blank for none"
-            className="w-full rounded-full border border-[var(--line-strong)] bg-black/30 px-4 py-2.5 text-sm outline-none"
+            placeholder="—"
+            className="w-24 rounded-full border border-[var(--line-strong)] bg-black/30 px-3 py-2 text-sm outline-none"
           />
         </label>
         <button
@@ -347,7 +291,7 @@ function PriceRow({
           }}
           className="btn-accent self-end rounded-full px-5 py-2.5 text-sm font-semibold disabled:opacity-60"
         >
-          {saving ? "Saving…" : "Save price"}
+          {saving ? "Saving…" : "Save"}
         </button>
       </div>
     </div>
