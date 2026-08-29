@@ -16,48 +16,54 @@ export default async function SuccessPage({
     <div className="mx-auto flex min-h-[70vh] max-w-xl flex-col justify-center px-4 py-16 sm:px-6">
       {params.session_id && <ConfirmPurchase sessionId={params.session_id} />}
       <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--ok)]">
-        On your shelf
+        Ready for Grok
       </p>
       <h1 className="font-[family-name:var(--font-display)] text-4xl font-bold tracking-tight">
         {params.free
-          ? "Added to workspace"
+          ? "Bot unlocked"
           : params.demo
-            ? "Demo purchase complete"
+            ? "Purchase simulated"
             : "Purchase complete"}
       </h1>
       <p className="mt-4 text-[var(--fg-muted)]">
         {template ? (
           <>
-            <span className="text-white">{template.title}</span> is ready. Creator{" "}
-            {template.author} earned credits on this sale
-            {params.demo ? " (demo mode)" : ""}.
+            Add <span className="text-white">{template.title}</span> to Grok Bot on x.ai.
+            {params.demo || params.session_id
+              ? ` ${template.author} gets 85% cash on this sale${params.demo ? " (simulated)" : ""}.`
+              : null}
           </>
         ) : (
-          "Your template is ready in the workspace."
+          "Your bot is ready — open it on x.ai to add to Grok Bot."
         )}
       </p>
       <div className="mt-8 flex flex-wrap gap-3">
         {template && (
-          <Link
-            href={`/templates/${template.slug}`}
+          <a
+            href={template.templateUrl}
+            target="_blank"
+            rel="noreferrer"
             className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-[var(--accent)]"
           >
-            Open template
-          </Link>
+            Add to Grok Bot
+          </a>
         )}
         <Link
-          href="/sell"
+          href="/#gallery"
           className="rounded-full border border-[var(--line-strong)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/5"
         >
-          View seller desk
+          Browse more
         </Link>
         <Link
-          href="/#gallery"
+          href="/studio"
           className="rounded-full px-5 py-3 text-sm text-[var(--fg-muted)] transition hover:text-white"
         >
-          Keep browsing
+          Seller studio
         </Link>
       </div>
+      {template && (
+        <p className="mt-6 break-all text-xs text-[var(--fg-dim)]">{template.templateUrl}</p>
+      )}
     </div>
   );
 }

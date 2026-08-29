@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BuyButton } from "@/components/buy-button";
 import { IntegrationIcons } from "@/components/integration-icons";
+import { TrackView } from "@/components/track-view";
 import { getTemplate } from "@/lib/store";
 import { effectivePrice, formatPrice, isOnSale } from "@/lib/types";
 
@@ -24,6 +25,7 @@ export default async function TemplateDetailPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+      <TrackView templateId={template.id} />
       <Link
         href="/#gallery"
         className="text-sm text-[var(--fg-muted)] transition hover:text-white"
@@ -46,7 +48,8 @@ export default async function TemplateDetailPage({
             {template.title}
           </h1>
           <p className="mt-3 text-[var(--fg-muted)]">
-            by {template.author} · {template.copies} copies
+            by {template.author} · {template.copies} copies · {template.views ?? 0}{" "}
+            views
           </p>
           <div className="mt-5">
             <IntegrationIcons items={template.integrations} />
@@ -77,8 +80,8 @@ export default async function TemplateDetailPage({
           </div>
           <p className="mb-6 text-sm text-[var(--fg-muted)]">
             {price === 0
-              ? "Free forever. Add to workspace instantly."
-              : "One-time purchase. Creator earns 85% in credits."}
+              ? "Free. Opens the Grok Bot add page on x.ai."
+              : "One-time purchase. After checkout you get Add to Grok Bot — seller keeps 85% cash."}
           </p>
           <BuyButton template={template} />
           <a
@@ -87,7 +90,7 @@ export default async function TemplateDetailPage({
             rel="noreferrer"
             className="mt-4 block text-center text-sm text-[var(--fg-dim)] underline-offset-4 hover:text-white hover:underline"
           >
-            Preview template URL
+            Preview on x.ai/bot
           </a>
         </aside>
       </div>
