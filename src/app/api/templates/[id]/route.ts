@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth, authorIdForUser } from "@/lib/auth";
-import { bumpViews, getTemplate, updateTemplate } from "@/lib/store";
+import {
+  bumpViews,
+  deleteTemplate,
+  getTemplate,
+  updateTemplate,
+} from "@/lib/store";
 import { syncTemplateStripePrice } from "@/lib/pricing";
 import { z } from "zod";
 
@@ -10,7 +15,7 @@ export async function GET(
 ) {
   const { id } = await context.params;
   const template = await getTemplate(id);
-  if (!template) {
+  if (!template || template.status === "removed") {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   return NextResponse.json({ template });
@@ -47,7 +52,7 @@ export async function PATCH(
   }
 
   const existing = await getTemplate(id);
-  if (!existing) {
+  if (!existing || existing.status === "removed") {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   if (existing.authorId !== authorIdForUser(session.user.id)) {
@@ -87,4 +92,30 @@ export async function PATCH(
   }
 
   return NextResponse.json({ template: updated });
+}
+
+export async function DELETE(
+  _request: Request,
+  context: { params: Promise<{ id: string }> },
+) {
+  const { id } = await context.params;
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Sign in required" }, { status: 401 });
+  }
+
+  const existing = await getTemplate(id);
+  if (!existing || existing.status === "removed") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  if (existing.authorId !== authorIdForUser(session.user.id)) {
+    return NextResponse.json({ error: "Not your template" }, { status: 403 });
+  }
+
+  const removed = await deleteTemplate(existing.id);
+  if (!removed) {
+    return NextResponse.json({ error: "Could not delete template" }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true, template: removed });
 }

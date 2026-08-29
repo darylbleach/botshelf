@@ -40,7 +40,7 @@ export interface Template {
   integrations: Integration[];
   instructions: string;
   templateUrl: string;
-  status: "published" | "pending";
+  status: "published" | "pending" | "removed";
 }
 
 export interface Purchase {

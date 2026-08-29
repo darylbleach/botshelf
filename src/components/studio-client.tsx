@@ -102,6 +102,27 @@ export function StudioClient() {
     load();
   }
 
+  async function deleteBot(templateId: string, title: string) {
+    const ok = window.confirm(
+      `Delete “${title}”? It will be removed from the marketplace. Past sales stay in your history.`,
+    );
+    if (!ok) return;
+
+    setMessage(null);
+    const res = await fetch(`/api/templates/${templateId}`, {
+      method: "DELETE",
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setMessage(
+        typeof data.error === "string" ? data.error : "Could not delete bot",
+      );
+      return;
+    }
+    setMessage(`Deleted “${title}”`);
+    load();
+  }
+
   return (
     <div className="space-y-10">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -180,7 +201,12 @@ export function StudioClient() {
               </p>
             )}
             {analytics.byTemplate.map((t) => (
-              <PriceRow key={t.id} template={t} onSave={savePrice} />
+              <PriceRow
+                key={t.id}
+                template={t}
+                onSave={savePrice}
+                onDelete={deleteBot}
+              />
             ))}
           </div>
 
@@ -233,15 +259,18 @@ function Metric({ label, value }: { label: string; value: string }) {
 function PriceRow({
   template,
   onSave,
+  onDelete,
 }: {
   template: Analytics["byTemplate"][number];
   onSave: (id: string, price: string, sale: string) => Promise<void>;
+  onDelete: (id: string, title: string) => Promise<void>;
 }) {
   const [price, setPrice] = useState(String(template.priceCents / 100));
   const [sale, setSale] = useState(
     template.salePriceCents != null ? String(template.salePriceCents / 100) : "",
   );
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     setPrice(String(template.priceCents / 100));
@@ -283,7 +312,7 @@ function PriceRow({
         </label>
         <button
           type="button"
-          disabled={saving}
+          disabled={saving || deleting}
           onClick={async () => {
             setSaving(true);
             await onSave(template.id, price, sale);
@@ -292,6 +321,18 @@ function PriceRow({
           className="btn-accent self-end rounded-full px-5 py-2.5 text-sm font-semibold disabled:opacity-60"
         >
           {saving ? "Saving…" : "Save"}
+        </button>
+        <button
+          type="button"
+          disabled={saving || deleting}
+          onClick={async () => {
+            setDeleting(true);
+            await onDelete(template.id, template.title);
+            setDeleting(false);
+          }}
+          className="self-end rounded-full border border-[var(--danger)]/40 px-4 py-2.5 text-sm font-semibold text-[var(--danger)] transition hover:bg-[var(--danger)]/10 disabled:opacity-60"
+        >
+          {deleting ? "Deleting…" : "Delete"}
         </button>
       </div>
     </div>

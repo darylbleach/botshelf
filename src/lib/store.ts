@@ -177,6 +177,12 @@ export async function updateTemplate(
   return row ? mapTemplate(row) : undefined;
 }
 
+export async function deleteTemplate(
+  id: string,
+): Promise<Template | undefined> {
+  return updateTemplate(id, { status: "removed" });
+}
+
 export async function bumpCopies(templateId: string) {
   await db
     .update(templatesTable)
@@ -368,11 +374,12 @@ export async function getSellerAnalytics(authorId: string) {
   ]);
 
   const mine = templates.filter((t) => t.authorId === authorId);
+  const active = mine.filter((t) => t.status !== "removed");
   const myPurchases = purchases.filter((p) =>
     mine.some((t) => t.id === p.templateId),
   );
 
-  const totalViews = mine.reduce((sum, t) => sum + (t.views ?? 0), 0);
+  const totalViews = active.reduce((sum, t) => sum + (t.views ?? 0), 0);
   const totalSales = myPurchases.length;
   const grossCents = myPurchases.reduce((sum, p) => sum + p.amountCents, 0);
   const cashCents = myPurchases.reduce(
@@ -386,7 +393,7 @@ export async function getSellerAnalytics(authorId: string) {
   const conversion =
     totalViews > 0 ? Math.round((totalSales / totalViews) * 1000) / 10 : 0;
 
-  const byTemplate = mine
+  const byTemplate = active
     .map((t) => {
       const sales = myPurchases.filter((p) => p.templateId === t.id);
       const revenue = sales.reduce((sum, p) => sum + p.amountCents, 0);
@@ -436,7 +443,7 @@ export async function getSellerAnalytics(authorId: string) {
     author: mine[0]?.author ?? seller?.author ?? authorId,
     seller,
     totals: {
-      templates: mine.length,
+      templates: active.length,
       views: totalViews,
       sales: totalSales,
       grossCents,
