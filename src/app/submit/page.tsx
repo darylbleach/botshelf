@@ -26,6 +26,9 @@ export default function SubmitPage() {
     setError(null);
     const form = new FormData(e.currentTarget);
     const priceCents = listForSale ? Math.round(Number(price) * 100) : 0;
+    const saleRaw = String(form.get("salePrice") ?? "").trim();
+    const salePriceCents =
+      listForSale && saleRaw !== "" ? Math.round(Number(saleRaw) * 100) : undefined;
 
     try {
       const res = await fetch("/api/templates", {
@@ -38,6 +41,7 @@ export default function SubmitPage() {
           category: form.get("category"),
           author: form.get("author"),
           priceCents,
+          salePriceCents,
           templateUrl: form.get("templateUrl"),
           instructions: form.get("instructions"),
           integrations,
@@ -45,7 +49,22 @@ export default function SubmitPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error("Could not publish template");
+      if (!res.ok) {
+        throw new Error(
+          typeof data.error === "string" ? data.error : "Could not publish template",
+        );
+      }
+      if (priceCents > 0) {
+        await fetch(`/api/templates/${data.template.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            authorId: data.template.authorId,
+            priceCents,
+            salePriceCents: salePriceCents ?? null,
+          }),
+        });
+      }
       router.push(`/templates/${data.template.slug}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Submit failed");
@@ -62,7 +81,8 @@ export default function SubmitPage() {
         Submit a template
       </h1>
       <p className="mt-3 text-[var(--fg-muted)]">
-        List free or paid. Paid listings pay you 85% in credits on every sale.
+        You set the price. Paid listings pay you <span className="text-white">85% cash</span> via
+        Stripe Connect on every sale.
       </p>
 
       <form onSubmit={onSubmit} className="mt-10 space-y-5">
@@ -100,12 +120,16 @@ export default function SubmitPage() {
           <Field label="Your name" name="author" required placeholder="Liam" />
         </div>
         <Field
-          label="Template URL"
+          label="Grok Bot URL"
           name="templateUrl"
           required
           type="url"
-          placeholder="https://..."
+          placeholder="https://x.ai/bot/Y7LbP6p5EBFjfdTp69cKr"
         />
+        <p className="-mt-3 text-xs text-[var(--fg-dim)]">
+          Paste the share link from your Grok Bot page (x.ai/bot/…). Buyers use{" "}
+          <span className="text-[var(--fg-muted)]">Add to Grok Bot</span> on that URL.
+        </p>
         <Field
           label="Instructions"
           name="instructions"
@@ -149,17 +173,34 @@ export default function SubmitPage() {
             />
           </label>
           {listForSale && (
-            <label className="mt-4 block space-y-2">
-              <span className="text-sm text-[var(--fg-muted)]">Price (USD)</span>
-              <input
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                type="number"
-                min="1"
-                step="1"
-                className="w-full rounded-full border border-[var(--line-strong)] bg-black/30 px-4 py-3 text-sm outline-none"
-              />
-            </label>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="block space-y-2">
+                <span className="text-sm text-[var(--fg-muted)]">Your price (USD)</span>
+                <input
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  type="number"
+                  min="1"
+                  step="1"
+                  className="w-full rounded-full border border-[var(--line-strong)] bg-black/30 px-4 py-3 text-sm outline-none"
+                />
+              </label>
+              <label className="block space-y-2">
+                <span className="text-sm text-[var(--fg-muted)]">Sale price (optional)</span>
+                <input
+                  name="salePrice"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="e.g. 12"
+                  className="w-full rounded-full border border-[var(--line-strong)] bg-black/30 px-4 py-3 text-sm outline-none"
+                />
+              </label>
+              <p className="sm:col-span-2 text-xs text-[var(--fg-dim)]">
+                Buyers pay your price. You keep 85% cash; BotShelf keeps 15%. Change anytime in
+                Studio.
+              </p>
+            </div>
           )}
         </div>
 
