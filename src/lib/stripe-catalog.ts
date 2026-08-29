@@ -3,43 +3,43 @@ export const STRIPE_CATALOG: Record<
   { productId: string; priceId: string; amount: number }
 > = {
   tpl_inbox_triage: {
-    productId: "prod_VA0xuq5cb1vfmK",
-    priceId: "price_1U9gvDEnhGCqY1izttflx0fe",
+    productId: "prod_VA1OFPBGeQpRjd",
+    priceId: "price_1U9hLYQndSVO0AvYYUiyJQYJ",
     amount: 1200,
   },
   tpl_launch_ops: {
-    productId: "prod_VA0xLti30aRXZl",
-    priceId: "price_1U9gvDEnhGCqY1izMFlogbi9",
+    productId: "prod_VA1OghzG7CZAlQ",
+    priceId: "price_1U9hLYQndSVO0AvY73iAu6bb",
     amount: 2900,
   },
   tpl_research_radar: {
-    productId: "prod_VA0xA9tvtbS23i",
-    priceId: "price_1U9gvEEnhGCqY1izxKl6YWwe",
+    productId: "prod_VA1O83nh0eXrks",
+    priceId: "price_1U9hLYQndSVO0AvYLoufnZdt",
     amount: 1800,
   },
   tpl_finance_pulse: {
-    productId: "prod_VA0xLATQJYXFYk",
-    priceId: "price_1U9gvEEnhGCqY1izXBgfPALD",
+    productId: "prod_VA1OmGEEuE8wyc",
+    priceId: "price_1U9hLYQndSVO0AvYbM62tid7",
     amount: 1500,
   },
   tpl_writer_room: {
-    productId: "prod_VA0x64U03hWSNZ",
-    priceId: "price_1U9gvFEnhGCqY1izHCAJxd9I",
+    productId: "prod_VA1OoSrrWxxkM0",
+    priceId: "price_1U9hLZQndSVO0AvYsZMbgNmE",
     amount: 900,
   },
   tpl_code_reviewer: {
-    productId: "prod_VA0xj0AK786ip0",
-    priceId: "price_1U9gvFEnhGCqY1izWuEcQbRv",
+    productId: "prod_VA1OkGwnBliCMQ",
+    priceId: "price_1U9hLZQndSVO0AvYmk5EmEHA",
     amount: 1600,
   },
   tpl_personal_coach: {
-    productId: "prod_VA0xcUdKAUsCrK",
-    priceId: "price_1U9gvFEnhGCqY1izF11vUXjK",
+    productId: "prod_VA1OY3cKuYwFd2",
+    priceId: "price_1U9hLZQndSVO0AvYHV6mhd35",
     amount: 700,
   },
   tpl_growth_loop: {
-    productId: "prod_VA0xuOEUKHjjxn",
-    priceId: "price_1U9gvGEnhGCqY1izPXP0t0uG",
+    productId: "prod_VA1O57dnx3kASy",
+    priceId: "price_1U9hLZQndSVO0AvYM3inRwEh",
     amount: 3500,
   },
 };

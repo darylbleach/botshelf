@@ -67,15 +67,55 @@ export async function POST(request: Request) {
   }
 
   if (!seller?.stripeAccountId || !seller.payoutsEnabled) {
-    return NextResponse.json(
-      {
-        error:
-          "This seller hasn't finished Stripe Connect yet, so cash payouts aren't enabled. Ask them to open Sell → Connect bank account.",
-        needsConnect: true,
+    const lineItem = stripePriceId
+      ? { quantity: 1 as const, price: stripePriceId }
+      : {
+          quantity: 1 as const,
+          price_data: {
+            currency: "usd" as const,
+            unit_amount: price,
+            product_data: {
+              name: template.title,
+              description: `BotShelf template by ${template.author}`,
+              tax_code: "txcd_10000000",
+              metadata: {
+                botshelf_template_id: template.id,
+                platform: "botshelf",
+              },
+            },
+          },
+        };
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      customer_email: email,
+      line_items: [lineItem],
+      metadata: {
+        templateId: template.id,
         authorId: template.authorId,
+        platform: "botshelf",
+        sellerPayoutCents: String(sellerCash),
+        platformFeeCents: String(fee),
+        payoutMode: "pending_connect",
       },
-      { status: 409 },
-    );
+      payment_intent_data: {
+        metadata: {
+          templateId: template.id,
+          authorId: template.authorId,
+          platform: "botshelf",
+          payoutMode: "pending_connect",
+        },
+      },
+      success_url: appUrl(`/success?template=${template.slug}&session_id={CHECKOUT_SESSION_ID}`),
+      cancel_url: appUrl(`/templates/${template.slug}?canceled=1`),
+      integration_identifier: `botshelf_checkout_${Math.random().toString(36).slice(2, 10)}`,
+    });
+
+    return NextResponse.json({
+      url: session.url,
+      sessionId: session.id,
+      payoutMode: "pending_connect",
+    });
   }
 
   const lineItem = stripePriceId
@@ -88,6 +128,7 @@ export async function POST(request: Request) {
           product_data: {
             name: template.title,
             description: `BotShelf template by ${template.author}`,
+            tax_code: "txcd_10000000",
             metadata: {
               botshelf_template_id: template.id,
               platform: "botshelf",
@@ -100,7 +141,6 @@ export async function POST(request: Request) {
     mode: "payment",
     customer_email: email,
     line_items: [lineItem],
-    // Destination charge: seller gets cash (85%), BotShelf keeps application fee (15%).
     payment_intent_data: {
       application_fee_amount: fee,
       transfer_data: {

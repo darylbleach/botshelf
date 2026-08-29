@@ -28,7 +28,6 @@ export function normalizeGrokBotUrl(input: string): string | null {
   const trimmed = input.trim();
   if (!trimmed) return null;
   if (isGrokBotUrl(trimmed)) return trimmed.replace(/\/+$/, "");
-  // Allow pasting bare bot ids
   if (/^[A-Za-z0-9_-]{8,64}$/.test(trimmed)) {
     return grokBotUrlFromId(trimmed);
   }

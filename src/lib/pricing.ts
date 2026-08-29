@@ -17,6 +17,7 @@ export async function syncTemplateStripePrice(
     const product = await stripe.products.create({
       name: template.title,
       description: `BotShelf template by ${template.author}`,
+      tax_code: "txcd_10000000",
       metadata: {
         botshelf_template_id: template.id,
         platform: "botshelf",
@@ -28,6 +29,7 @@ export async function syncTemplateStripePrice(
     await stripe.products.update(productId, {
       name: template.title,
       description: `BotShelf template by ${template.author}`,
+      tax_code: "txcd_10000000",
     });
   }
 
