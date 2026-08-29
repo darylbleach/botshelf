@@ -48,13 +48,13 @@ export default async function SellPage({
         <div className="flex flex-wrap gap-3">
           <Link
             href="/studio"
-            className="inline-flex rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-[var(--accent)]"
+            className="inline-flex min-h-11 items-center rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110"
           >
             Open studio
           </Link>
           <Link
             href="/submit"
-            className="inline-flex rounded-full border border-[var(--line-strong)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/5"
+            className="inline-flex min-h-11 items-center rounded-full border border-[var(--line-strong)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/5"
           >
             List a template
           </Link>

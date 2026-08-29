@@ -209,7 +209,7 @@ export default function SubmitPage() {
         <button
           type="submit"
           disabled={loading || integrations.length === 0}
-          className="w-full rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-[var(--accent)] disabled:opacity-60"
+          className="w-full rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110 disabled:opacity-60"
         >
           {loading ? "Publishing…" : "Publish to BotShelf"}
         </button>

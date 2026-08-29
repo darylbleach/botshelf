@@ -43,7 +43,7 @@ export default async function SuccessPage({
             href={template.templateUrl}
             target="_blank"
             rel="noreferrer"
-            className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-[var(--accent)]"
+            className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110"
           >
             Add to Grok Bot
           </a>
