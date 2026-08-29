@@ -18,12 +18,12 @@ test.describe("Seller surfaces", () => {
   });
 
   test("studio can open with author query and show template pricing", async ({ page }) => {
-    await page.goto("/studio?authorId=author_maya");
+    await page.goto("/studio?authorId=author_botshelf");
     const select = page.locator("select").first();
     await expect(select).toBeVisible({ timeout: 15_000 });
     await expect
       .poll(async () => select.inputValue(), { timeout: 20_000 })
-      .toBe("author_maya");
-    await expect(page.getByText(/inbox triage/i).first()).toBeVisible({ timeout: 20_000 });
+      .toBe("author_botshelf");
+    await expect(page.getByText(/ops pager/i).first()).toBeVisible({ timeout: 20_000 });
   });
 });
