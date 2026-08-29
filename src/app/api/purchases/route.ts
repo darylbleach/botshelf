@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { addPurchase, creatorEarnings, listPurchases } from "@/lib/store";
-import { creatorCreditsFromSale, getStripe } from "@/lib/stripe";
+import {
+  getStripe,
+  platformFeeFromSale,
+  sellerCashFromSale,
+} from "@/lib/stripe";
 
 export async function GET() {
   const [purchases, earnings] = await Promise.all([listPurchases(), creatorEarnings()]);
@@ -30,13 +34,23 @@ export async function POST(request: Request) {
   }
 
   const amount = session.amount_total ?? 0;
+  const sellerPayout = session.metadata?.sellerPayoutCents
+    ? Number(session.metadata.sellerPayoutCents)
+    : sellerCashFromSale(amount);
+  const platformFee = session.metadata?.platformFeeCents
+    ? Number(session.metadata.platformFeeCents)
+    : platformFeeFromSale(amount);
+
   await addPurchase({
     id: `pur_${session.id}`,
     templateId,
-    buyerEmail: session.customer_details?.email ?? session.customer_email ?? "buyer@botshelf.bot",
+    buyerEmail:
+      session.customer_details?.email ?? session.customer_email ?? "buyer@botshelf.net",
     amountCents: amount,
-    creatorCredits: creatorCreditsFromSale(amount),
+    sellerPayoutCents: sellerPayout,
+    platformFeeCents: platformFee,
     stripeSessionId: session.id,
+    stripeAccountId: session.metadata?.stripeAccountId,
     createdAt: new Date().toISOString(),
   });
 
