@@ -13,8 +13,8 @@ const TEMPLATES_FILE = path.join(DATA_DIR, "templates.json");
 const PURCHASES_FILE = path.join(DATA_DIR, "purchases.json");
 const WORKSPACE_FILE = path.join(DATA_DIR, "workspace.json");
 const SELLERS_FILE = path.join(DATA_DIR, "sellers.json");
-/** Bump to replace stale /tmp catalogs (fake paid placeholders, e2e junk). */
-const CATALOG_VERSION = "honest-v1-ops-pager-free";
+/** Bump to replace stale /tmp catalogs (placeholders, demo bots). */
+const CATALOG_VERSION = "empty-v1-no-seed-bots";
 const CATALOG_VERSION_FILE = path.join(DATA_DIR, "catalog-version.txt");
 
 let ensurePromise: Promise<void> | null = null;
