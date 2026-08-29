@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
-import { addPurchase, addToWorkspace, bumpCopies, getTemplate } from "@/lib/store";
-import { appUrl, creatorCreditsFromSale, getStripe } from "@/lib/stripe";
+import { addPurchase, addToWorkspace, bumpCopies, getSeller, getTemplate } from "@/lib/store";
+import { STRIPE_CATALOG } from "@/lib/stripe-catalog";
+import {
+  appUrl,
+  getStripe,
+  platformFeeFromSale,
+  sellerCashFromSale,
+} from "@/lib/stripe";
 import { effectivePrice } from "@/lib/types";
 import { z } from "zod";
 
@@ -23,28 +29,35 @@ export async function POST(request: Request) {
   }
 
   const price = effectivePrice(template);
-  const email = parsed.data.buyerEmail ?? "buyer@botshelf.bot";
+  const email = parsed.data.buyerEmail ?? "buyer@botshelf.net";
+  const catalog = STRIPE_CATALOG[template.id];
+  const stripePriceId = template.stripePriceId ?? catalog?.priceId;
+  const fee = platformFeeFromSale(price);
+  const sellerCash = sellerCashFromSale(price);
 
   if (price === 0) {
     await bumpCopies(template.id);
     await addToWorkspace(template.id);
     return NextResponse.json({
       free: true,
+      grokBotUrl: template.templateUrl,
       url: appUrl(`/success?template=${template.slug}&free=1`),
     });
   }
 
+  const seller = await getSeller(template.authorId);
   const stripe = getStripe();
-  const forceDemo = parsed.data.demo || !stripe;
+  const forceDemo = parsed.data.demo === true;
 
   if (forceDemo || !stripe) {
-    const purchaseId = `pur_demo_${Date.now().toString(36)}`;
     await addPurchase({
-      id: purchaseId,
+      id: `pur_demo_${Date.now().toString(36)}`,
       templateId: template.id,
       buyerEmail: email,
       amountCents: price,
-      creatorCredits: creatorCreditsFromSale(price),
+      sellerPayoutCents: sellerCash,
+      platformFeeCents: fee,
+      stripeAccountId: seller?.stripeAccountId,
       createdAt: new Date().toISOString(),
     });
     return NextResponse.json({
@@ -53,25 +66,61 @@ export async function POST(request: Request) {
     });
   }
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    customer_email: email,
-    line_items: [
+  if (!seller?.stripeAccountId || !seller.payoutsEnabled) {
+    return NextResponse.json(
       {
-        quantity: 1,
+        error:
+          "This seller hasn't finished Stripe Connect yet, so cash payouts aren't enabled. Ask them to open Sell → Connect bank account.",
+        needsConnect: true,
+        authorId: template.authorId,
+      },
+      { status: 409 },
+    );
+  }
+
+  const lineItem = stripePriceId
+    ? { quantity: 1 as const, price: stripePriceId }
+    : {
+        quantity: 1 as const,
         price_data: {
-          currency: "usd",
+          currency: "usd" as const,
           unit_amount: price,
           product_data: {
             name: template.title,
             description: `BotShelf template by ${template.author}`,
+            metadata: {
+              botshelf_template_id: template.id,
+              platform: "botshelf",
+            },
           },
         },
+      };
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    customer_email: email,
+    line_items: [lineItem],
+    // Destination charge: seller gets cash (85%), BotShelf keeps application fee (15%).
+    payment_intent_data: {
+      application_fee_amount: fee,
+      transfer_data: {
+        destination: seller.stripeAccountId,
       },
-    ],
+      metadata: {
+        templateId: template.id,
+        authorId: template.authorId,
+        platform: "botshelf",
+        sellerPayoutCents: String(sellerCash),
+        platformFeeCents: String(fee),
+      },
+    },
     metadata: {
       templateId: template.id,
       authorId: template.authorId,
+      platform: "botshelf",
+      stripeAccountId: seller.stripeAccountId,
+      sellerPayoutCents: String(sellerCash),
+      platformFeeCents: String(fee),
     },
     success_url: appUrl(`/success?template=${template.slug}&session_id={CHECKOUT_SESSION_ID}`),
     cancel_url: appUrl(`/templates/${template.slug}?canceled=1`),
