@@ -38,13 +38,20 @@ async function fulfillCheckoutSession(session: Stripe.Checkout.Session) {
 
 async function syncConnectedAccount(account: Stripe.Account) {
   const authorId = account.metadata?.botshelf_author_id;
+  const userId =
+    account.metadata?.botshelf_user_id ||
+    (await listSellers()).find((s) => s.stripeAccountId === account.id || s.authorId === authorId)
+      ?.userId;
+
+  if (!userId) return;
+
   if (!authorId) {
-    // Match by stripe account id if metadata missing
     const sellers = await listSellers();
     const existing = sellers.find((s) => s.stripeAccountId === account.id);
-    if (!existing) return;
+    if (!existing?.userId) return;
     await upsertSeller({
       ...existing,
+      userId: existing.userId,
       payoutsEnabled: Boolean(
         account.payouts_enabled || account.capabilities?.transfers === "active",
       ),
@@ -58,6 +65,7 @@ async function syncConnectedAccount(account: Stripe.Account) {
   const existing = sellers.find((s) => s.authorId === authorId);
   await upsertSeller({
     authorId,
+    userId,
     author: existing?.author ?? account.business_profile?.name ?? authorId,
     email: existing?.email ?? account.email ?? "",
     stripeAccountId: account.id,
