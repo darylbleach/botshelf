@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createTemplate, listTemplates } from "@/lib/store";
+import { normalizeGrokBotUrl } from "@/lib/grok";
 import type { Category, Integration } from "@/lib/types";
 import { z } from "zod";
 
@@ -61,7 +62,7 @@ const submitSchema = z.object({
   author: z.string().min(2).max(40),
   priceCents: z.number().int().min(0).max(100000),
   salePriceCents: z.number().int().min(0).max(100000).optional(),
-  templateUrl: z.string().url(),
+  templateUrl: z.string().min(8),
   instructions: z.string().min(5).max(1000),
   integrations: z.array(z.string()).min(1).max(6),
   listForSale: z.boolean().optional(),
@@ -75,6 +76,17 @@ export async function POST(request: Request) {
   }
 
   const data = parsed.data;
+  const grokUrl = normalizeGrokBotUrl(data.templateUrl);
+  if (!grokUrl) {
+    return NextResponse.json(
+      {
+        error:
+          "Bot URL must be an x.ai Grok Bot link, e.g. https://x.ai/bot/Y7LbP6p5EBFjfdTp69cKr",
+      },
+      { status: 400 },
+    );
+  }
+
   const slug = data.title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -92,7 +104,7 @@ export async function POST(request: Request) {
     salePriceCents: data.salePriceCents,
     integrations: data.integrations as Integration[],
     instructions: data.instructions,
-    templateUrl: data.templateUrl,
+    templateUrl: grokUrl,
     status: "published",
     featured: false,
   });
