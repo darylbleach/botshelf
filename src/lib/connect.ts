@@ -52,9 +52,7 @@ export async function createSellerConnectAccount(input: {
           fees: { payer: "application" },
           losses: { payments: "application" },
         },
-        capabilities: {
-          transfers: { requested: true },
-        },
+        capabilities: { transfers: { requested: true } },
         country: input.country ?? "US",
         email: input.email,
         business_profile: {
@@ -68,9 +66,7 @@ export async function createSellerConnectAccount(input: {
         },
       });
       accountId = account.id;
-      if (err instanceof Error) {
-        void err;
-      }
+      if (err instanceof Error) void err;
     }
 
     seller = await upsertSeller({
@@ -101,8 +97,7 @@ export async function refreshSellerConnectStatus(authorId: string): Promise<Sell
 
   const account = await stripe.accounts.retrieve(seller.stripeAccountId);
   const transfers =
-    account.capabilities?.transfers === "active" ||
-    Boolean(account.payouts_enabled);
+    account.capabilities?.transfers === "active" || Boolean(account.payouts_enabled);
 
   return upsertSeller({
     ...seller,
