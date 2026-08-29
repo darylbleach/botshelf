@@ -147,7 +147,7 @@ export default function SubmitPage() {
                 onClick={() => toggleIntegration(item)}
                 className={`rounded-full px-3 py-1.5 text-sm capitalize transition ${
                   integrations.includes(item)
-                    ? "bg-[var(--accent)] text-[var(--accent-ink)]"
+                    ? "btn-accent"
                     : "border border-[var(--line)] text-[var(--fg-muted)]"
                 }`}
               >
@@ -209,7 +209,7 @@ export default function SubmitPage() {
         <button
           type="submit"
           disabled={loading || integrations.length === 0}
-          className="w-full rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110 disabled:opacity-60"
+          className="w-full btn-accent rounded-full px-5 py-3 text-sm font-semibold transition disabled:opacity-60"
         >
           {loading ? "Publishing…" : "Publish to BotShelf"}
         </button>
