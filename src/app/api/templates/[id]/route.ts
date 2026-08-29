@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { auth, authorIdForUser } from "@/lib/auth";
 import { bumpViews, getTemplate, updateTemplate } from "@/lib/store";
 import { syncTemplateStripePrice } from "@/lib/pricing";
 import { z } from "zod";
@@ -16,7 +17,6 @@ export async function GET(
 }
 
 const patchSchema = z.object({
-  authorId: z.string().min(2).optional(),
   priceCents: z.number().int().min(0).max(100000).optional(),
   salePriceCents: z.number().int().min(0).max(100000).nullable().optional(),
   title: z.string().min(2).max(80).optional(),
@@ -41,15 +41,16 @@ export async function PATCH(
     return NextResponse.json({ template });
   }
 
-  if (!parsed.data.authorId) {
-    return NextResponse.json({ error: "authorId required" }, { status: 400 });
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   }
 
   const existing = await getTemplate(id);
   if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  if (existing.authorId !== parsed.data.authorId) {
+  if (existing.authorId !== authorIdForUser(session.user.id)) {
     return NextResponse.json({ error: "Not your template" }, { status: 403 });
   }
 
@@ -81,7 +82,7 @@ export async function PATCH(
           })) ?? updated;
       }
     } catch {
-      // Price still saved locally if Stripe sync fails (e.g. limited key).
+      // Price still saved locally if Stripe sync fails.
     }
   }
 
