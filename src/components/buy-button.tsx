@@ -23,7 +23,6 @@ export function BuyButton({ template }: { template: Template }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not add bot");
-      // Free bots: go straight to the Grok Bot add page
       window.location.href = grokUrl;
     } catch (err) {
       alert(err instanceof Error ? err.message : "Could not add bot");
