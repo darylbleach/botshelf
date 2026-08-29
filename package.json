@@ -9,13 +9,21 @@
     "lint": "eslint",
     "test:e2e": "playwright test",
     "test:e2e:local": "E2E_BASE_URL=http://127.0.0.1:3000 playwright test",
-    "test:e2e:prod": "E2E_BASE_URL=https://botshelf.net playwright test"
+    "test:e2e:prod": "E2E_BASE_URL=https://botshelf.net playwright test",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@auth/drizzle-adapter": "^1.11.3",
+    "@neondatabase/serverless": "^1.1.0",
+    "drizzle-orm": "^0.45.2",
     "lucide-react": "^1.35.0",
     "next": "16.3.3",
+    "next-auth": "^5.0.0-beta.32",
+    "pg": "^8.23.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "resend": "^6.25.0",
     "stripe": "^22.6.0",
     "zod": "^4.5.2"
   },
@@ -24,8 +32,10 @@
     "@stripe/cli": "^1.50.6",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
     "tailwindcss": "^4",
