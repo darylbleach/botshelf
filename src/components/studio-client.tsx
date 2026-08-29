@@ -345,7 +345,7 @@ function PriceRow({
             await onSave(template.id, price, sale);
             setSaving(false);
           }}
-          className="self-end rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-ink)] disabled:opacity-60"
+          className="btn-accent self-end rounded-full px-5 py-2.5 text-sm font-semibold disabled:opacity-60"
         >
           {saving ? "Saving…" : "Save price"}
         </button>
