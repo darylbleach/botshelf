@@ -168,6 +168,47 @@ button.btn-accent:hover {
   mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
 }
 
+@keyframes shelf-drift {
+  from {
+    transform: scale(1.06) translate3d(1.2%, 0, 0);
+  }
+  to {
+    transform: scale(1.06) translate3d(-1.2%, 0, 0);
+  }
+}
+
+@keyframes accent-sweep {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.hero-shelf-drift {
+  animation: shelf-drift 28s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.hero-accent-sweep {
+  background: linear-gradient(
+    105deg,
+    rgba(216, 255, 74, 0.1) 0%,
+    rgba(216, 255, 74, 0.03) 32%,
+    transparent 58%
+  );
+  animation: accent-sweep 7s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-shelf-drift,
+  .hero-accent-sweep {
+    animation: none;
+  }
+}
+
 .noise {
   position: relative;
 }
