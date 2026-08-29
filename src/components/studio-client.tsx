@@ -60,15 +60,18 @@ export function StudioClient({
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     void fetch("/api/analytics")
       .then((r) => r.json())
       .then((d) => {
+        if (cancelled) return;
         setAuthors(d.authors ?? []);
-        if (!authorId && d.authors?.[0]) {
-          setAuthorId(d.authors[0].authorId);
-        }
+        setAuthorId((current) => current || d.authors?.[0]?.authorId || "");
       });
-  }, [authorId]);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!authorId) return;

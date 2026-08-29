@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:e2e": "playwright test",
+    "test:e2e:local": "E2E_BASE_URL=http://127.0.0.1:3000 playwright test",
+    "test:e2e:prod": "E2E_BASE_URL=https://botshelf.net playwright test"
   },
   "dependencies": {
     "lucide-react": "^1.35.0",
@@ -17,6 +20,7 @@
     "zod": "^4.5.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@stripe/cli": "^1.50.6",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
