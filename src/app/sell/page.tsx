@@ -48,7 +48,7 @@ export default async function SellPage({
         <div className="flex flex-wrap gap-3">
           <Link
             href="/studio"
-            className="inline-flex min-h-11 items-center rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110"
+            className="inline-flex min-h-11 items-center btn-accent rounded-full px-5 py-3 text-sm font-semibold transition"
           >
             Open studio
           </Link>
