@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 
 const links = [
   { href: "/#gallery", label: "Browse" },
@@ -13,6 +14,7 @@ const links = [
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
   const menuId = useId();
 
@@ -28,6 +30,8 @@ export function SiteHeader() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
+
+  const signedIn = status === "authenticated" && Boolean(session?.user);
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[rgba(7,7,8,0.86)] backdrop-blur-xl">
@@ -51,7 +55,6 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        {/* Desktop nav */}
         <nav className="hidden items-center gap-2 md:flex" aria-label="Primary">
           {links.map((link) => {
             const active = pathname === link.href;
@@ -69,15 +72,29 @@ export function SiteHeader() {
               </Link>
             );
           })}
-          <Link
-            href="/submit"
-            className="btn-accent ml-1 inline-flex min-h-10 items-center rounded-full px-3.5 py-1.5 text-sm font-semibold transition"
-          >
-            List a template
-          </Link>
+          {signedIn ? (
+            <>
+              <span className="ml-1 max-w-[140px] truncate text-xs text-[var(--fg-dim)]">
+                {session?.user?.email}
+              </span>
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="inline-flex min-h-10 items-center rounded-full border border-[var(--line-strong)] px-3.5 py-1.5 text-sm text-[var(--fg-muted)] transition hover:text-white"
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/sign-in"
+              className="btn-accent ml-1 inline-flex min-h-10 items-center rounded-full px-3.5 py-1.5 text-sm font-semibold transition"
+            >
+              Sign in
+            </Link>
+          )}
         </nav>
 
-        {/* Mobile menu button */}
         <button
           type="button"
           className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line-strong)] text-white md:hidden"
@@ -107,7 +124,6 @@ export function SiteHeader() {
         </button>
       </div>
 
-      {/* Mobile panel */}
       {open && (
         <div
           id={menuId}
@@ -131,13 +147,26 @@ export function SiteHeader() {
                 </Link>
               );
             })}
-            <Link
-              href="/submit"
-              onClick={() => setOpen(false)}
-              className="btn-accent mt-2 inline-flex min-h-12 items-center justify-center rounded-full px-4 text-base font-semibold"
-            >
-              List a template
-            </Link>
+            {signedIn ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  void signOut({ callbackUrl: "/" });
+                }}
+                className="mt-2 inline-flex min-h-12 items-center justify-center rounded-full border border-[var(--line-strong)] px-4 text-base text-[var(--fg-muted)]"
+              >
+                Sign out
+              </button>
+            ) : (
+              <Link
+                href="/sign-in"
+                onClick={() => setOpen(false)}
+                className="btn-accent mt-2 inline-flex min-h-12 items-center justify-center rounded-full px-4 text-base font-semibold"
+              >
+                Sign in
+              </Link>
+            )}
           </nav>
         </div>
       )}
